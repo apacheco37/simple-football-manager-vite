@@ -21,17 +21,19 @@ export interface Player {
   position: Position;
 }
 
-export type Position =
-  | "GK"
-  | "DFC"
-  | "DFL"
-  | "DFR"
-  | "MFC"
-  | "MFL"
-  | "MFR"
-  | "STC"
-  | "STL"
-  | "STR";
+export const ALL_POSITIONS = [
+  "GK",
+  "DFC",
+  "DFL",
+  "DFR",
+  "MFC",
+  "MFL",
+  "MFR",
+  "STC",
+  "STL",
+  "STR",
+] as const;
+export type Position = (typeof ALL_POSITIONS)[number];
 
 export class DexieDB extends Dexie {
   leagues!: Table<League>;
