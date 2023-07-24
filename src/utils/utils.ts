@@ -7,11 +7,13 @@ export const createNewLeague = (
   playersPerTeam: number
 ) => {
   const teams = generateRandomTeams(teamsQuantity);
-  const players: Player[] = [];
+  let players: Player[] = [];
   let playerID = 0;
 
   teams.forEach((team) => {
-    players.concat(generateRandomPlayers(playersPerTeam, playerID, team.id));
+    players = players.concat(
+      generateRandomPlayers(playersPerTeam, playerID, team.id)
+    );
     playerID = playerID + playersPerTeam;
   });
 
