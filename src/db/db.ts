@@ -4,21 +4,22 @@ export interface League {
   id?: number;
   name: string;
   teams: Team[];
-}
-
-export interface Team {
-  id?: number;
-  name: string;
   players: Player[];
 }
 
+export interface Team {
+  id: number;
+  name: string;
+}
+
 export interface Player {
-  id?: number;
+  id: number;
   firstName: string;
   lastName: string;
   age: number;
   skill: number;
   position: Position;
+  teamID: number | null;
 }
 
 export const ALL_POSITIONS = [
@@ -40,7 +41,7 @@ export class DexieDB extends Dexie {
 
   constructor() {
     super("simple-fm-db");
-    this.version(2).stores({
+    this.version(3).stores({
       leagues: "++id",
     });
   }
