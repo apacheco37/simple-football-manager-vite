@@ -27,7 +27,7 @@ const Leagues = () => {
   };
 
   const handleLoadLeague = (leagueID: number) => {
-    navigate(`/leagues/${leagueID}/teams`);
+    navigate(`${leagueID}/teams`);
   };
 
   return (

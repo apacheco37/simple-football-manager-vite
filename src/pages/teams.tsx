@@ -1,20 +1,16 @@
 import { List, ListItem } from "@mui/material";
-import { useParams } from "react-router-dom";
-import { useLiveQuery } from "dexie-react-hooks";
 
-import { db } from "../db/db";
+import { useContext } from "react";
+import { LeagueContext } from "./leaguelayout";
 
 const Teams = () => {
-  const { leagueid } = useParams();
-  console.log(leagueid);
-  const league = useLiveQuery(() => db.leagues.get(Number(leagueid!)));
-  console.log(league?.name);
+  const { league } = useContext(LeagueContext);
 
   return (
     <>
       Teams:
       <List>
-        {league?.teams.map((team) => (
+        {league.teams.map((team) => (
           <ListItem key={team.id}>{team.name}</ListItem>
         ))}
       </List>
