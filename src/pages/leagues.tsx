@@ -4,21 +4,30 @@ import { useState } from "react";
 
 import { db } from "../db/db";
 import { createNewLeague } from "../utils/utils";
+import { useNavigate } from "react-router-dom";
 
 const Leagues = () => {
   const [newLeagueNameInput, setNewLeagueNameInput] = useState("");
   const leagues = useLiveQuery(() => db.leagues.toArray());
+  const navigate = useNavigate();
 
   const handleCreateLeague = async () => {
     if (!newLeagueNameInput) return;
 
     try {
-      await db.leagues.add(createNewLeague(newLeagueNameInput));
+      const id = await db.leagues.add(
+        createNewLeague(newLeagueNameInput, 16, 20)
+      );
 
       setNewLeagueNameInput("");
+      handleLoadLeague(id as number);
     } catch (error) {
       console.log("Failed to create the new league.", error);
     }
+  };
+
+  const handleLoadLeague = (leagueID: number) => {
+    navigate(`/leagues/${leagueID}/teams`);
   };
 
   return (
@@ -36,7 +45,11 @@ const Leagues = () => {
       <Typography>Or load an existing one</Typography>
       <List>
         {leagues?.map((league) => (
-          <ListItem key={league.id}>{league.name}</ListItem>
+          <ListItem key={league.id}>
+            <Button onClick={() => handleLoadLeague(league.id!)}>
+              {league.name}
+            </Button>
+          </ListItem>
         ))}
       </List>
     </>
