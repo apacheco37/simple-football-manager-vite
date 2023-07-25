@@ -1,4 +1,4 @@
-import { Link, List, ListItem } from "@mui/material";
+import { Link, List, ListItem, Typography } from "@mui/material";
 import { useContext } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -9,7 +9,7 @@ const Teams = () => {
 
   return (
     <>
-      Teams:
+      <Typography variant="h6">Teams:</Typography>
       <List>
         {league.teams.map((team) => (
           <ListItem key={team.id}>

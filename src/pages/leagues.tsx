@@ -1,4 +1,11 @@
-import { TextField, Button, Typography, List, ListItem } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Typography,
+  List,
+  ListItem,
+  Stack,
+} from "@mui/material";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 
@@ -31,18 +38,20 @@ const Leagues = () => {
   };
 
   return (
-    <>
-      <TextField
-        value={newLeagueNameInput}
-        onChange={(e) => {
-          setNewLeagueNameInput(e.target.value);
-        }}
-        placeholder={"League Name"}
-      />
-      <Button variant="outlined" onClick={handleCreateLeague}>
-        Create New League
-      </Button>
-      <Typography>Or load an existing one</Typography>
+    <Stack spacing={4}>
+      <Stack direction={"row"} spacing={2}>
+        <TextField
+          value={newLeagueNameInput}
+          onChange={(e) => {
+            setNewLeagueNameInput(e.target.value);
+          }}
+          placeholder={"League Name"}
+        />
+        <Button variant="outlined" onClick={handleCreateLeague}>
+          Create New League
+        </Button>
+      </Stack>
+      <Typography variant="h6">Or load an existing one:</Typography>
       <List>
         {leagues?.map((league) => (
           <ListItem key={league.id}>
@@ -52,7 +61,7 @@ const Leagues = () => {
           </ListItem>
         ))}
       </List>
-    </>
+    </Stack>
   );
 };
 
