@@ -1,6 +1,7 @@
-import { List, ListItem } from "@mui/material";
-
+import { Link, List, ListItem } from "@mui/material";
 import { useContext } from "react";
+import { Link as RouterLink } from "react-router-dom";
+
 import { LeagueContext } from "./leaguelayout";
 
 const Teams = () => {
@@ -11,7 +12,11 @@ const Teams = () => {
       Teams:
       <List>
         {league.teams.map((team) => (
-          <ListItem key={team.id}>{team.name}</ListItem>
+          <ListItem key={team.id}>
+            <Link component={RouterLink} to={`${team.id}/players`}>
+              {team.name}
+            </Link>
+          </ListItem>
         ))}
       </List>
     </>
