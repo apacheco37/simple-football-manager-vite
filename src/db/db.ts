@@ -1,8 +1,9 @@
 import Dexie, { Table } from "dexie";
 
-export interface League {
+export interface SaveGame {
   id?: number;
   name: string;
+  leagues: League[];
   teams: Team[];
   players: Player[];
 }
@@ -10,6 +11,7 @@ export interface League {
 export interface Team {
   id: number;
   name: string;
+  leagueID: number;
 }
 
 export interface Player {
@@ -20,6 +22,51 @@ export interface Player {
   skill: number;
   position: Position;
   teamID: number | null;
+}
+
+export interface MatchEvent {
+  minute: number;
+  type: "goal" | "yellow_card" | "red_card" | "injury" | "substitution";
+  player1ID: number;
+  player2ID: number | null;
+}
+
+export interface MatchTeamRatings {
+  attack: number;
+  midfield: number;
+  defense: number;
+  goalkeeping: number;
+}
+
+export interface MatchTeamPlayer {
+  playerID: number;
+  position: Position;
+  skill: number;
+}
+
+export interface Match {
+  id: number;
+  homeTeamID: number;
+  awayTeamID: number;
+  neutral: boolean;
+  lineups?: { homeTeam: MatchTeamPlayer[]; awayTeam: MatchTeamPlayer[] };
+  ratings?: { homeTeam: MatchTeamRatings; awayTeam: MatchTeamRatings };
+  events?: { homeTeam: MatchEvent[]; awayTeam: MatchEvent[] };
+}
+
+export interface MatchDay {
+  day: number;
+  matches: Match[];
+}
+
+export interface Season {
+  fixture: MatchDay[];
+}
+
+export interface League {
+  id: number;
+  name: string;
+  seasons: Season[];
 }
 
 export const ALL_POSITIONS = [
@@ -37,12 +84,12 @@ export const ALL_POSITIONS = [
 export type Position = (typeof ALL_POSITIONS)[number];
 
 export class DexieDB extends Dexie {
-  leagues!: Table<League>;
+  saveGame!: Table<SaveGame>;
 
   constructor() {
     super("simple-fm-db");
-    this.version(3).stores({
-      leagues: "++id",
+    this.version(4).stores({
+      saveGame: "++id",
     });
   }
 }
