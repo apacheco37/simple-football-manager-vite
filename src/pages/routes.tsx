@@ -1,18 +1,18 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Layout from "./layout";
-import Leagues from "./leagues";
 import Teams from "./teams";
 import Players from "./players";
-import LeagueLayout from "./leaguelayout";
+import SaveGameLayout from "./savegame-layout";
+import SaveGames from "./savegames";
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Navigate to={"/leagues"} />} />
-        <Route path="leagues" element={<Leagues />} />
-        <Route path="leagues/:leagueid" element={<LeagueLayout />}>
+        <Route index element={<Navigate to={"/save-games"} />} />
+        <Route path="save-games" element={<SaveGames />} />
+        <Route path="save-games/:savegameid" element={<SaveGameLayout />}>
           <Route path="teams" element={<Teams />} />
           <Route path="teams/:teamid/players" element={<Players />} />
           <Route

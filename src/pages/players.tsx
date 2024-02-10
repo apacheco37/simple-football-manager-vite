@@ -10,12 +10,12 @@ import {
   TableRow,
 } from "@mui/material";
 
-import { LeagueContext } from "./leaguelayout";
+import { SaveGameContext } from "./savegame-layout";
 
 const Players = () => {
   const {
-    league: { players },
-  } = useContext(LeagueContext);
+    saveGame: { players },
+  } = useContext(SaveGameContext);
   const { teamid } = useParams();
 
   const teamPlayers = players.filter(
