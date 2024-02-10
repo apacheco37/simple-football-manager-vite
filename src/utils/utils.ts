@@ -79,13 +79,13 @@ const generateFixture = (teamIDs: number[]) => {
     const matchesFirstRound: Match[] = [];
     const matchesSecondRound: Match[] = [];
 
-    const firstSlice = teamIDs.slice(i); // Get the elements from index X to the end
-    const secondSlice = teamIDs.slice(0, i); // Get the first X elements
-    const rotatedTeamIDs = firstSlice.concat(secondSlice); // Concatenate the slices
+    // const firstSlice = teamIDs.slice(i); // Get the elements from index X to the end
+    // const secondSlice = teamIDs.slice(0, i); // Get the first X elements
+    // const rotatedTeamIDs = firstSlice.concat(secondSlice); // Concatenate the slices
 
     for (let j = 0; j < matchesPerDay; j++) {
-      const homeTeamID = rotatedTeamIDs[j];
-      const awayTeamID = rotatedTeamIDs[rotatedTeamIDs.length - 1 - j];
+      // const homeTeamID = rotatedTeamIDs[j];
+      // const awayTeamID = rotatedTeamIDs[rotatedTeamIDs.length - 1 - j];
       matchesFirstRound.push();
       matchesSecondRound.push();
     }
@@ -140,7 +140,7 @@ const generateRandomTeamName = () => {
 const generateRandomTeams = (leagueID: number, quantity: number) => {
   const teams: Team[] = [];
 
-  for (let i = 0; i < quantity; i++) {
+  for (let i = 0 + leagueID * quantity; i < (1 + leagueID) * quantity; i++) {
     teams.push({
       id: i,
       name: generateRandomTeamName(),

@@ -2,16 +2,16 @@ import { Link, List, ListItem, Typography } from "@mui/material";
 import { useContext } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
-import { LeagueContext } from "./leaguelayout";
+import { SaveGameContext } from "./savegame-layout";
 
 const Teams = () => {
-  const { league } = useContext(LeagueContext);
+  const { saveGame } = useContext(SaveGameContext);
 
   return (
     <>
       <Typography variant="h6">Teams:</Typography>
       <List>
-        {league.teams.map((team) => (
+        {saveGame.teams.map((team) => (
           <ListItem key={team.id}>
             <Link component={RouterLink} to={`${team.id}/players`}>
               {team.name}
