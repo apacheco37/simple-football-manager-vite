@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   Paper,
   Table,
@@ -9,12 +9,13 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import { SaveGameContext } from "./savegame-layout";
 
 const Players = () => {
   const {
-    saveGame: { players },
+    saveGame: { players, id },
   } = useContext(SaveGameContext);
   const { teamid } = useParams();
 
@@ -22,7 +23,14 @@ const Players = () => {
     (player) => player.teamID === Number(teamid!)
   );
 
-  const columns = ["First Name", "Last Name", "Age", "Skill", "Position"];
+  const columns = [
+    "First Name",
+    "Last Name",
+    "Age",
+    "Skill",
+    "Position",
+    "See Details",
+  ];
 
   return (
     <TableContainer component={Paper}>
@@ -47,6 +55,11 @@ const Players = () => {
               <TableCell>{player.age}</TableCell>
               <TableCell>{player.skill}</TableCell>
               <TableCell>{player.position}</TableCell>
+              <TableCell>
+                <Link to={`/save-games/${id}/players/${player.id}`}>
+                  <VisibilityIcon />
+                </Link>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
