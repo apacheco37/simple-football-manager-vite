@@ -5,6 +5,7 @@ import Teams from "./teams";
 import Players from "./players";
 import SaveGameLayout from "./savegame-layout";
 import SaveGames from "./savegames";
+import PlayerDetails from "./player-details";
 
 const AppRoutes = () => {
   return (
@@ -15,10 +16,7 @@ const AppRoutes = () => {
         <Route path="save-games/:savegameid" element={<SaveGameLayout />}>
           <Route path="teams" element={<Teams />} />
           <Route path="teams/:teamid/players" element={<Players />} />
-          <Route
-            path="players/:playerid"
-            // element={<PlayerDetails />}
-          />
+          <Route path="players/:playerid" element={<PlayerDetails />} />
         </Route>
 
         {/* Using path="*"" means "match anything", so this route
