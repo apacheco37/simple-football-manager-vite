@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { Outlet, useNavigate, useParams } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { SaveGame, db } from "../db/db";
 import { createContext } from "react";
@@ -23,6 +23,7 @@ const SaveGameLayout = () => {
   const { savegameid } = useParams();
   const saveGame = useLiveQuery(() => db.saveGame.get(Number(savegameid)));
   const navigate = useNavigate();
+  const location = useLocation();
   // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   if (!saveGame) return <></>;
@@ -44,7 +45,10 @@ const SaveGameLayout = () => {
         <Toolbar />
         <List>
           <ListItem key={"Teams"} disablePadding>
-            <ListItemButton onClick={() => navigate("teams")}>
+            <ListItemButton
+              onClick={() => navigate("teams")}
+              selected={location.pathname.endsWith("teams")}
+            >
               <ListItemText primary={"Teams"} />
             </ListItemButton>
           </ListItem>
@@ -54,12 +58,18 @@ const SaveGameLayout = () => {
             </ListItemButton>
           </ListItem>
           <ListItem key={"Leagues"} disablePadding>
-            <ListItemButton onClick={() => navigate("leagues")}>
+            <ListItemButton
+              onClick={() => navigate("leagues")}
+              selected={location.pathname.endsWith("leagues")}
+            >
               <ListItemText primary={"Leagues"} />
             </ListItemButton>
           </ListItem>
           <ListItem key={"Schedule"} disablePadding>
-            <ListItemButton onClick={() => navigate("schedule")}>
+            <ListItemButton
+              onClick={() => navigate("schedule")}
+              selected={location.pathname.endsWith("schedule")}
+            >
               <ListItemText primary={"Schedule"} />
             </ListItemButton>
           </ListItem>
