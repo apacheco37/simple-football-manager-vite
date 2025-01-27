@@ -1,4 +1,6 @@
 import { faker } from "@faker-js/faker";
+import { v4 as uuidv4 } from "uuid";
+
 import {
   ALL_POSITIONS,
   League,
@@ -79,15 +81,25 @@ const generateFixture = (teamIDs: number[]) => {
     const matchesFirstRound: Match[] = [];
     const matchesSecondRound: Match[] = [];
 
-    // const firstSlice = teamIDs.slice(i); // Get the elements from index X to the end
-    // const secondSlice = teamIDs.slice(0, i); // Get the first X elements
-    // const rotatedTeamIDs = firstSlice.concat(secondSlice); // Concatenate the slices
+    const firstSlice = teamIDs.slice(i); // Get the elements from index X to the end
+    const secondSlice = teamIDs.slice(0, i); // Get the first X elements
+    const rotatedTeamIDs = firstSlice.concat(secondSlice); // Concatenate the slices
 
     for (let j = 0; j < matchesPerDay; j++) {
-      // const homeTeamID = rotatedTeamIDs[j];
-      // const awayTeamID = rotatedTeamIDs[rotatedTeamIDs.length - 1 - j];
-      matchesFirstRound.push();
-      matchesSecondRound.push();
+      const homeTeamID = rotatedTeamIDs[j];
+      const awayTeamID = rotatedTeamIDs[rotatedTeamIDs.length - 1 - j];
+      matchesFirstRound.push({
+        id: uuidv4(),
+        homeTeamID,
+        awayTeamID,
+        neutral: false,
+      });
+      matchesSecondRound.push({
+        id: uuidv4(),
+        homeTeamID,
+        awayTeamID,
+        neutral: false,
+      });
     }
 
     const matchDayFirstRound: MatchDay = {

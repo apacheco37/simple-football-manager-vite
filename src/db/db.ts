@@ -45,7 +45,7 @@ export interface MatchTeamPlayer {
 }
 
 export interface Match {
-  id: number;
+  id: string;
   homeTeamID: number;
   awayTeamID: number;
   neutral: boolean;
