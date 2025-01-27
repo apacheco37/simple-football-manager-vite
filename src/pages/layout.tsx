@@ -1,5 +1,5 @@
 import { AppBar, Box, Toolbar, Typography } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 
 const Layout = () => {
   return (
@@ -10,7 +10,12 @@ const Layout = () => {
           sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
         >
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Typography
+              variant="h6"
+              component={Link}
+              to="/"
+              sx={{ flexGrow: 1, textDecoration: "none", color: "inherit" }}
+            >
               Simple Football Manager
             </Typography>
           </Toolbar>

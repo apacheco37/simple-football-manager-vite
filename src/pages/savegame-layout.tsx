@@ -58,6 +58,11 @@ const SaveGameLayout = () => {
               <ListItemText primary={"Leagues"} />
             </ListItemButton>
           </ListItem>
+          <ListItem key={"Schedule"} disablePadding>
+            <ListItemButton onClick={() => navigate("schedule")}>
+              <ListItemText primary={"Schedule"} />
+            </ListItemButton>
+          </ListItem>
         </List>
       </Drawer>
       <Box sx={{ marginLeft: `${drawerWidth}px` }}>
