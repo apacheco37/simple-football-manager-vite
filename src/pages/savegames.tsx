@@ -8,26 +8,25 @@ import {
 } from "@mui/material";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
-
-import { db } from "../db/db";
-import { createNewGame } from "../utils/utils";
 import { useNavigate } from "react-router-dom";
 
+import { getSaveGamesDB } from "../db/db";
+import { createNewGame } from "../utils/utils";
+
 const SaveGames = () => {
+  const saveGamesDB = getSaveGamesDB();
   const [newSaveGameNameInput, setNewSaveGameNameInput] = useState("");
-  const saveGames = useLiveQuery(() => db.saveGame.toArray());
+  const saveGames = useLiveQuery(() => saveGamesDB.saveGames.toArray());
   const navigate = useNavigate();
 
   const handleCreateSaveGame = async () => {
     if (!newSaveGameNameInput) return;
 
     try {
-      const id = await db.saveGame.add(
-        createNewGame(newSaveGameNameInput, 4, 16, 20)
-      );
+      const saveGameID = await createNewGame(newSaveGameNameInput);
 
       setNewSaveGameNameInput("");
-      handleLoadSaveGame(id as number);
+      handleLoadSaveGame(saveGameID);
     } catch (error) {
       console.log("Failed to create the new save game.", error);
     }

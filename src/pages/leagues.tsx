@@ -3,16 +3,19 @@ import { Box, Link, List, ListItem } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
 import { SaveGameContext } from "./savegame-layout";
+import { useLiveQuery } from "dexie-react-hooks";
 
 const Leagues = () => {
   const {
-    saveGame: { leagues },
+    saveGameDB: { leagues: leaguesDB },
   } = useContext(SaveGameContext);
+
+  const leagues = useLiveQuery(() => leaguesDB.toArray());
 
   return (
     <Box>
       <List>
-        {leagues.map((league) => (
+        {leagues?.map((league) => (
           <ListItem key={league.id}>
             <Link component={RouterLink} to={`${league.id}`}>
               {league.name}

@@ -3,19 +3,16 @@ import Dexie, { Table } from "dexie";
 export interface SaveGame {
   id?: number;
   name: string;
-  leagues: League[];
-  teams: Team[];
-  players: Player[];
 }
 
 export interface Team {
-  id: number;
+  id?: number;
   name: string;
   leagueID: number;
 }
 
 export interface Player {
-  id: number;
+  id?: number;
   firstName: string;
   lastName: string;
   age: number;
@@ -45,28 +42,31 @@ export interface MatchTeamPlayer {
 }
 
 export interface Match {
-  id: string;
+  id?: number;
   homeTeamID: number;
   awayTeamID: number;
-  neutral: boolean;
+  matchDayID: string;
+  neutral?: true;
   lineups?: { homeTeam: MatchTeamPlayer[]; awayTeam: MatchTeamPlayer[] };
   ratings?: { homeTeam: MatchTeamRatings; awayTeam: MatchTeamRatings };
   events?: { homeTeam: MatchEvent[]; awayTeam: MatchEvent[] };
 }
 
 export interface MatchDay {
+  id?: string;
   day: number;
-  matches: Match[];
+  seasonID: number;
 }
 
 export interface Season {
-  fixture: MatchDay[];
+  id?: number;
+  year: number;
+  leagueID: number;
 }
 
 export interface League {
-  id: number;
+  id?: number;
   name: string;
-  seasons: Season[];
 }
 
 export const ALL_POSITIONS = [
@@ -83,15 +83,37 @@ export const ALL_POSITIONS = [
 ] as const;
 export type Position = (typeof ALL_POSITIONS)[number];
 
-export class DexieDB extends Dexie {
-  saveGame!: Table<SaveGame>;
+export class SaveGameDB extends Dexie {
+  teams!: Table<Team>;
+  players!: Table<Player>;
+  leagues!: Table<League>;
+  seasons!: Table<Season>;
+  matches!: Table<Match>;
+  matchDays!: Table<MatchDay>;
 
-  constructor() {
-    super("simple-fm-db");
-    this.version(4).stores({
-      saveGame: "++id",
+  constructor(saveGameID: number) {
+    super(`savegame-${saveGameID}`);
+    this.version(1).stores({
+      teams: "++id, leagueID",
+      players: "++id, teamID",
+      leagues: "++id",
+      seasons: "++id, leagueID",
+      matches: "++id, homeTeamID, awayTeamID, matchDayID",
+      matchDays: "++id, seasonID",
     });
   }
 }
 
-export const db = new DexieDB();
+class SaveGamesDB extends Dexie {
+  saveGames!: Table<SaveGame>;
+
+  constructor() {
+    super("save-games");
+    this.version(1).stores({
+      saveGames: "++id",
+    });
+  }
+}
+
+export const getSaveGameDB = (saveGameID: number) => new SaveGameDB(saveGameID);
+export const getSaveGamesDB = () => new SaveGamesDB();

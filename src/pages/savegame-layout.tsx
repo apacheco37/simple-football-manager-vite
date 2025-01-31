@@ -1,10 +1,11 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 
-import { SaveGame, db } from "../db/db";
+import { SaveGame, SaveGameDB, getSaveGameDB, getSaveGamesDB } from "../db/db";
 import { createContext } from "react";
 import {
   Box,
+  Button,
   Drawer,
   List,
   ListItem,
@@ -13,15 +14,18 @@ import {
   Toolbar,
 } from "@mui/material";
 
-export const SaveGameContext = createContext<{ saveGame: SaveGame }>(
-  {} as { saveGame: SaveGame }
-);
+export const SaveGameContext = createContext<{
+  saveGame: SaveGame;
+  saveGameDB: SaveGameDB;
+}>({} as { saveGame: SaveGame; saveGameDB: SaveGameDB });
 
 const drawerWidth = 180;
 
 const SaveGameLayout = () => {
   const { savegameid } = useParams();
-  const saveGame = useLiveQuery(() => db.saveGame.get(Number(savegameid)));
+  const saveGame = useLiveQuery(() =>
+    getSaveGamesDB().saveGames.get(Number(savegameid))
+  );
   const navigate = useNavigate();
   const location = useLocation();
   // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -29,7 +33,9 @@ const SaveGameLayout = () => {
   if (!saveGame) return <></>;
 
   return (
-    <SaveGameContext.Provider value={{ saveGame }}>
+    <SaveGameContext.Provider
+      value={{ saveGame, saveGameDB: getSaveGameDB(Number(savegameid)) }}
+    >
       <Drawer
         variant="persistent"
         open={true}
@@ -74,6 +80,7 @@ const SaveGameLayout = () => {
             </ListItemButton>
           </ListItem>
         </List>
+        <Button>Play!</Button>
       </Drawer>
       <Box sx={{ marginLeft: `${drawerWidth}px` }}>
         <Outlet />

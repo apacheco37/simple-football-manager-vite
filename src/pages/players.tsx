@@ -12,15 +12,17 @@ import {
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import { SaveGameContext } from "./savegame-layout";
+import { useLiveQuery } from "dexie-react-hooks";
 
 const Players = () => {
   const {
-    saveGame: { players, id },
+    saveGameDB: { players },
+    saveGame: { id },
   } = useContext(SaveGameContext);
   const { teamid } = useParams();
 
-  const teamPlayers = players.filter(
-    (player) => player.teamID === Number(teamid!)
+  const teamPlayers = useLiveQuery(() =>
+    players.where({ teamID: Number(teamid) }).toArray()
   );
 
   const columns = [
@@ -43,7 +45,7 @@ const Players = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {teamPlayers.map((player) => (
+          {teamPlayers?.map((player) => (
             <TableRow
               key={player.id}
               // sx={{ "&:last-child td, &:last-child th": { border: 0 } }}

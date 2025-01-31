@@ -1,24 +1,24 @@
 import { Link, List, ListItem, Typography } from "@mui/material";
 import { useContext } from "react";
 import { Link as RouterLink, useParams } from "react-router-dom";
+import { useLiveQuery } from "dexie-react-hooks";
 
 import { SaveGameContext } from "./savegame-layout";
 
 const LeagueDetails = () => {
   const { leagueid } = useParams();
   const {
-    saveGame: { teams },
+    saveGameDB: { teams },
   } = useContext(SaveGameContext);
-
-  const leagueTeams = teams.filter(
-    (teams) => teams.leagueID === Number(leagueid)
+  const leagueTeams = useLiveQuery(() =>
+    teams.where({ leagueID: Number(leagueid) }).toArray()
   );
 
   return (
     <>
       <Typography variant="h6">Teams:</Typography>
       <List>
-        {leagueTeams.map((team) => (
+        {leagueTeams?.map((team) => (
           <ListItem key={team.id}>
             <Link component={RouterLink} to={/* `${team.id}/players` */ ""}>
               {team.name}

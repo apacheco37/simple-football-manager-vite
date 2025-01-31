@@ -3,14 +3,19 @@ import { useParams } from "react-router-dom";
 
 import { SaveGameContext } from "./savegame-layout";
 import { Typography } from "@mui/material";
+import { useLiveQuery } from "dexie-react-hooks";
 
 const PlayerDetails = () => {
   const { playerid } = useParams();
   const {
-    saveGame: { players },
+    saveGameDB: { players },
   } = useContext(SaveGameContext);
 
-  const player = players.filter((player) => player.id === Number(playerid!))[0];
+  const player = useLiveQuery(() => players.get(Number(playerid)));
+
+  if (!player) {
+    return <></>;
+  }
 
   return (
     <div>
