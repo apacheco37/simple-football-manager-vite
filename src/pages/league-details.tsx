@@ -8,10 +8,10 @@ import { SaveGameContext } from "./savegame-layout";
 const LeagueDetails = () => {
   const { leagueid } = useParams();
   const {
-    saveGameDB: { teams },
+    saveGameDB: { teamsDB },
   } = useContext(SaveGameContext);
   const leagueTeams = useLiveQuery(() =>
-    teams.where({ leagueID: Number(leagueid) }).toArray()
+    teamsDB.where({ leagueID: Number(leagueid) }).toArray()
   );
 
   return (

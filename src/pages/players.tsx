@@ -16,13 +16,13 @@ import { useLiveQuery } from "dexie-react-hooks";
 
 const Players = () => {
   const {
-    saveGameDB: { players },
+    saveGameDB: { playersDB },
     saveGame: { id },
   } = useContext(SaveGameContext);
   const { teamid } = useParams();
 
   const teamPlayers = useLiveQuery(() =>
-    players.where({ teamID: Number(teamid) }).toArray()
+    playersDB.where({ teamID: Number(teamid) }).toArray()
   );
 
   const columns = [

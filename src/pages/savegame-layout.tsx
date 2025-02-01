@@ -13,6 +13,7 @@ import {
   ListItemText,
   Toolbar,
 } from "@mui/material";
+import { simulateMatchDay } from "../utils/utils";
 
 export const SaveGameContext = createContext<{
   saveGame: SaveGame;
@@ -23,12 +24,14 @@ const drawerWidth = 180;
 
 const SaveGameLayout = () => {
   const { savegameid } = useParams();
-  const saveGame = useLiveQuery(() =>
-    getSaveGamesDB().saveGames.get(Number(savegameid))
-  );
+  const saveGame = useLiveQuery(() => getSaveGamesDB().get(Number(savegameid)));
   const navigate = useNavigate();
   const location = useLocation();
   // const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const handlePlayClick = () => {
+    simulateMatchDay(Number(savegameid));
+  };
 
   if (!saveGame) return <></>;
 
@@ -80,7 +83,7 @@ const SaveGameLayout = () => {
             </ListItemButton>
           </ListItem>
         </List>
-        <Button>Play!</Button>
+        <Button onClick={handlePlayClick}>Play!</Button>
       </Drawer>
       <Box sx={{ marginLeft: `${drawerWidth}px` }}>
         <Outlet />

@@ -1,5 +1,4 @@
 import { faker } from "@faker-js/faker";
-import { v4 as uuidv4 } from "uuid";
 
 import {
   ALL_POSITIONS,
@@ -7,7 +6,6 @@ import {
   getSaveGamesDB,
   League,
   Match,
-  MatchDay,
   Player,
   SaveGame,
   Season,
@@ -16,39 +14,43 @@ import {
 
 export const createNewGame = async (newSaveGameName: string) => {
   const saveGamesDB = getSaveGamesDB();
-  const saveGameID = (await saveGamesDB.saveGames.add(
+  const saveGameID = (await saveGamesDB.add(
     createSaveGame(newSaveGameName)
   )) as number;
 
   const saveGameDB = getSaveGameDB(saveGameID);
 
-  const leagueIDs = (await saveGameDB.leagues.bulkAdd(createLeagues(4), {
+  const leagueIDs = (await saveGameDB.leaguesDB.bulkAdd(createLeagues(4), {
     allKeys: true,
   })) as number[];
 
-  const teamIDs = (await saveGameDB.teams.bulkAdd(createTeams(leagueIDs, 16), {
-    allKeys: true,
-  })) as number[];
+  const teamsPerLeague = 16;
 
-  await saveGameDB.players.bulkAdd(createPlayers(20, teamIDs));
+  const teamIDs = (await saveGameDB.teamsDB.bulkAdd(
+    createTeams(leagueIDs, teamsPerLeague),
+    {
+      allKeys: true,
+    }
+  )) as number[];
 
-  const seasonIDs = (await saveGameDB.seasons.bulkAdd(
-    createSeasons(leagueIDs),
+  await saveGameDB.playersDB.bulkAdd(createPlayers(20, teamIDs));
+
+  const seasonIDs = (await saveGameDB.seasonsDB.bulkAdd(
+    createSeasons(leagueIDs, teamsPerLeague),
     { allKeys: true }
   )) as number[];
 
   for (const seasonID of seasonIDs) {
-    const leagueID = (await saveGameDB.seasons.get(seasonID))?.leagueID;
-    const seasonTeams = await saveGameDB.teams.where({ leagueID }).toArray();
+    const leagueID = (await saveGameDB.seasonsDB.get(seasonID))?.leagueID;
+    const seasonTeams = await saveGameDB.teamsDB.where({ leagueID }).toArray();
     if (!seasonTeams.length) {
       throw new Error("No teams found for the season.");
     }
-    const { matches, matchDays } = generateMatchDaysForSeasons(
+    const matches = generateMatchesForSeasons(
       seasonTeams.map((team) => team.id!),
       seasonID
     );
-    await saveGameDB.matches.bulkAdd(matches);
-    await saveGameDB.matchDays.bulkAdd(matchDays);
+    await saveGameDB.matchesDB.bulkAdd(matches);
   }
 
   return saveGameID;
@@ -99,20 +101,22 @@ const createPlayers = (playersQuantity: number, teamIDs: number[]) => {
   return players;
 };
 
-const createSeasons = (leagueIDs: number[]) => {
+const createSeasons = (leagueIDs: number[], teamsPerLeague: number) => {
   const seasons: Season[] = [];
+  const matchDaysPerSeason = (teamsPerLeague - 1) * 2;
 
   leagueIDs.forEach((leagueID) => {
     seasons.push({
       year: 1,
       leagueID,
+      days: matchDaysPerSeason,
     });
   });
 
   return seasons;
 };
 
-const generateMatchDaysForSeasons = (teamIDs: number[], seasonID: number) => {
+const generateMatchesForSeasons = (teamIDs: number[], seasonID: number) => {
   const teamsQuantity = teamIDs.length;
 
   if (teamsQuantity % 2 !== 0) {
@@ -121,7 +125,6 @@ const generateMatchDaysForSeasons = (teamIDs: number[], seasonID: number) => {
     );
   }
 
-  const matchDays: MatchDay[] = [];
   const matches: Match[] = [];
   const matchDaysQuantity = teamsQuantity - 1;
   const matchesPerDay = teamsQuantity / 2;
@@ -134,40 +137,26 @@ const generateMatchDaysForSeasons = (teamIDs: number[], seasonID: number) => {
     const secondSlice = teamIDs.slice(0, i); // Get the first X elements
     const rotatedTeamIDs = firstSlice.concat(secondSlice); // Concatenate the slices
 
-    const matchDayFirstRoundID = uuidv4();
-    const matchDaySecondRoundID = uuidv4();
-
     for (let j = 0; j < matchesPerDay; j++) {
       const homeTeamID = rotatedTeamIDs[j];
       const awayTeamID = rotatedTeamIDs[rotatedTeamIDs.length - 1 - j];
       matchesFirstRound.push({
         homeTeamID,
         awayTeamID,
-        matchDayID: matchDayFirstRoundID,
+        seasonID,
+        day: i + 1,
       });
       matchesSecondRound.push({
         homeTeamID,
         awayTeamID,
-        matchDayID: matchDaySecondRoundID,
+        seasonID,
+        day: i + 1 + matchDaysQuantity,
       });
     }
-
-    const matchDayFirstRound: MatchDay = {
-      id: matchDayFirstRoundID,
-      day: i + 1,
-      seasonID,
-    };
-    const matchDaySecondRound: MatchDay = {
-      id: matchDaySecondRoundID,
-      day: i + 1 + matchDaysQuantity,
-      seasonID,
-    };
-
-    matchDays.push(...[matchDayFirstRound, matchDaySecondRound]);
     matches.push(...matchesFirstRound, ...matchesSecondRound);
   }
 
-  return { matchDays, matches };
+  return matches;
 };
 
 const generateRandomPlayers = (quantity: number, teamID: number) => {
@@ -191,22 +180,58 @@ const generateRandomTeamName = () => {
   return `${faker.location.city()} ${faker.animal.dog()}s`;
 };
 
-// const simulateMatchDay = async (matchDay: MatchDay) => {
-//   const results = matchDay.matches.map((match) => {
-//     const homeScore = faker.number.int({ min: 0, max: 5 });
-//     const awayScore = faker.number.int({ min: 0, max: 5 });
+export const simulateMatchDay = async (saveGameID: number) => {
+  const { seasonsDB, matchesDB } = getSaveGameDB(saveGameID);
 
-//     return {
-//       matchID: match.id,
-//       homeScore,
-//       awayScore,
-//     };
-//   });
+  // this sucks, should be improved ffs
+  (await seasonsDB.toArray()).forEach(async (season) => {
+    const matches = season.lastDayPlayed
+      ? await matchesDB
+          .where({ seasonID: season.id, day: season.lastDayPlayed + 1 })
+          .toArray()
+      : await matchesDB.where({ seasonID: season.id, day: 1 }).toArray();
 
-//   await db.saveGame.put(
-//     ...saveGame,
-//     ...{saveGame.leagues[leagueID].seasons[seasonID].fixture[matchDay.day - 1].matches}
-//   );
+    matches.forEach(async (match) => {
+      const homeScore = faker.number.int({ min: 0, max: 5 });
+      const awayScore = faker.number.int({ min: 0, max: 5 });
 
-//   return results;
-// };
+      const eventsHome = [];
+      const eventsAway = [];
+
+      for (let i = 0; i < homeScore; i++) {
+        const playerID = 1; // TODO
+        const minute = faker.number.int({ min: 1, max: 90 });
+        const event = {
+          type: "goal",
+          teamID: match.homeTeamID,
+          playerID,
+          minute,
+        };
+        eventsHome.push(event);
+      }
+
+      for (let i = 0; i < awayScore; i++) {
+        const playerID = 1; // TODO
+        const minute = faker.number.int({ min: 1, max: 90 });
+        const event = {
+          type: "goal",
+          teamID: match.awayTeamID,
+          playerID,
+          minute,
+        };
+        eventsAway.push(event);
+      }
+
+      await matchesDB.update(match.id!, {
+        // ratings: {
+        //   homeTeam: generateRandomTeamRatings(),
+        //   awayTeam: generateRandomTeamRatings(),
+        // },
+        events: { homeTeam: eventsHome, awayTeam: eventsAway },
+      });
+      await seasonsDB.update(season.id!, {
+        lastDayPlayed: season.lastDayPlayed ? season.lastDayPlayed + 1 : 1,
+      });
+    });
+  });
+};

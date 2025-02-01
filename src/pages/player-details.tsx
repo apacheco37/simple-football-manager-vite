@@ -8,10 +8,10 @@ import { useLiveQuery } from "dexie-react-hooks";
 const PlayerDetails = () => {
   const { playerid } = useParams();
   const {
-    saveGameDB: { players },
+    saveGameDB: { playersDB },
   } = useContext(SaveGameContext);
 
-  const player = useLiveQuery(() => players.get(Number(playerid)));
+  const player = useLiveQuery(() => playersDB.get(Number(playerid)));
 
   if (!player) {
     return <></>;

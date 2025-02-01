@@ -7,7 +7,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 
 const Teams = () => {
   const {
-    saveGameDB: { teams: teamsDB },
+    saveGameDB: { teamsDB },
   } = useContext(SaveGameContext);
 
   const teams = useLiveQuery(() => teamsDB.toArray(), [], []);

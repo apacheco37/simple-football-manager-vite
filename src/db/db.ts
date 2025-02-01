@@ -45,23 +45,20 @@ export interface Match {
   id?: number;
   homeTeamID: number;
   awayTeamID: number;
-  matchDayID: string;
+  day: number;
+  seasonID: number;
   neutral?: true;
   lineups?: { homeTeam: MatchTeamPlayer[]; awayTeam: MatchTeamPlayer[] };
   ratings?: { homeTeam: MatchTeamRatings; awayTeam: MatchTeamRatings };
   events?: { homeTeam: MatchEvent[]; awayTeam: MatchEvent[] };
 }
 
-export interface MatchDay {
-  id?: string;
-  day: number;
-  seasonID: number;
-}
-
 export interface Season {
   id?: number;
   year: number;
   leagueID: number;
+  days: number;
+  lastDayPlayed?: number;
 }
 
 export interface League {
@@ -84,36 +81,34 @@ export const ALL_POSITIONS = [
 export type Position = (typeof ALL_POSITIONS)[number];
 
 export class SaveGameDB extends Dexie {
-  teams!: Table<Team>;
-  players!: Table<Player>;
-  leagues!: Table<League>;
-  seasons!: Table<Season>;
-  matches!: Table<Match>;
-  matchDays!: Table<MatchDay>;
+  teamsDB!: Table<Team>;
+  playersDB!: Table<Player>;
+  leaguesDB!: Table<League>;
+  seasonsDB!: Table<Season>;
+  matchesDB!: Table<Match>;
 
   constructor(saveGameID: number) {
     super(`savegame-${saveGameID}`);
-    this.version(1).stores({
-      teams: "++id, leagueID",
-      players: "++id, teamID",
-      leagues: "++id",
-      seasons: "++id, leagueID",
-      matches: "++id, homeTeamID, awayTeamID, matchDayID",
-      matchDays: "++id, seasonID",
+    this.version(2).stores({
+      teamsDB: "++id, leagueID",
+      playersDB: "++id, teamID",
+      leaguesDB: "++id",
+      seasonsDB: "++id, leagueID",
+      matchesDB: "++id, homeTeamID, awayTeamID, day, seasonID",
     });
   }
 }
 
 class SaveGamesDB extends Dexie {
-  saveGames!: Table<SaveGame>;
+  saveGamesDB!: Table<SaveGame>;
 
   constructor() {
     super("save-games");
-    this.version(1).stores({
-      saveGames: "++id",
+    this.version(2).stores({
+      saveGamesDB: "++id",
     });
   }
 }
 
 export const getSaveGameDB = (saveGameID: number) => new SaveGameDB(saveGameID);
-export const getSaveGamesDB = () => new SaveGamesDB();
+export const getSaveGamesDB = () => new SaveGamesDB().saveGamesDB;

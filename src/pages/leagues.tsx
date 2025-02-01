@@ -7,7 +7,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 
 const Leagues = () => {
   const {
-    saveGameDB: { leagues: leaguesDB },
+    saveGameDB: { leaguesDB },
   } = useContext(SaveGameContext);
 
   const leagues = useLiveQuery(() => leaguesDB.toArray());

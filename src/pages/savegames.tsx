@@ -16,7 +16,7 @@ import { createNewGame } from "../utils/utils";
 const SaveGames = () => {
   const saveGamesDB = getSaveGamesDB();
   const [newSaveGameNameInput, setNewSaveGameNameInput] = useState("");
-  const saveGames = useLiveQuery(() => saveGamesDB.saveGames.toArray());
+  const saveGames = useLiveQuery(() => saveGamesDB.toArray());
   const navigate = useNavigate();
 
   const handleCreateSaveGame = async () => {

@@ -10,25 +10,20 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 
 import { SaveGameContext } from "./savegame-layout";
 
 const Schedule = () => {
   const {
-    saveGameDB: {
-      seasons: seasonsDB,
-      leagues: leaguesDB,
-      teams,
-      matchDays: matchDaysDB,
-      matches: matchesDB,
-    },
+    saveGameDB: { leaguesDB, teamsDB, matchesDB, seasonsDB },
   } = useContext(SaveGameContext);
-  const [selectedLeagueID, setSelectedLeagueID] = useState<number>(1);
-  const [selectedMatchDayID, setSelectedMatchDayID] = useState<string>("");
+  const [selectedLeagueID, setSelectedLeagueID] = useState<number | "">("");
+  const [selectedSeasonID, setSelectedSeasonID] = useState<number | "">("");
+  const [selectedMatchDay, setSelectedMatchDay] = useState<number | "">("");
 
-  const teamNames = useLiveQuery(() => teams.toArray(), [], []).reduce(
+  const teamNames = useLiveQuery(() => teamsDB.toArray(), [], []).reduce(
     (acc, team) => {
       acc[team.id!] = team.name;
       return acc;
@@ -38,41 +33,62 @@ const Schedule = () => {
 
   const leagues = useLiveQuery(() => leaguesDB.toArray(), [], []);
 
-  const season = useLiveQuery(
-    () => seasonsDB.where({ leagueID: selectedLeagueID }).first(),
-    [selectedLeagueID]
-  );
+  useEffect(() => {
+    if (leagues.length) {
+      setSelectedLeagueID(leagues[0].id!);
+    }
+  }, [leagues]);
 
-  const matchDays = useLiveQuery(
+  const seasons = useLiveQuery(
     () =>
-      season?.id
-        ? matchDaysDB.where({ seasonID: season.id }).sortBy("day")
+      selectedLeagueID
+        ? seasonsDB.where({ leagueID: selectedLeagueID }).toArray()
         : [],
-    [season?.id],
+    [selectedLeagueID],
     []
   );
+
+  useEffect(() => {
+    if (seasons.length) {
+      setSelectedSeasonID(seasons[0].id!);
+    }
+  }, [seasons]);
+
+  const selectedSeasonDays = useMemo(() => {
+    const season = seasons.find((s) => s.id === selectedSeasonID);
+    return season?.days;
+  }, [selectedSeasonID, seasons]);
+
+  const seasonDaysSelectOptions = useMemo(() => {
+    if (!selectedSeasonDays) return [];
+
+    return Array.from({ length: selectedSeasonDays }, (_, i) => (
+      <MenuItem key={i + 1} value={i + 1}>
+        {i + 1}
+      </MenuItem>
+    ));
+  }, [selectedSeasonDays]);
 
   const matches = useLiveQuery(
-    () => matchesDB.where({ matchDayID: selectedMatchDayID }).toArray(),
-    [selectedMatchDayID],
+    () =>
+      selectedSeasonID && selectedMatchDay
+        ? matchesDB
+            .where({ seasonID: selectedSeasonID, day: selectedMatchDay })
+            .toArray()
+        : [],
+    [selectedSeasonID, selectedMatchDay],
     []
-  );
-
-  const selectedMatchDay = useMemo(
-    () => matchDays.find((matchDay) => matchDay.id === selectedMatchDayID),
-    [matchDays, selectedMatchDayID]
   );
 
   return (
     <Box>
       <Typography variant="h6">Schedule</Typography>
       <Box flexDirection={"row"} display="flex" gap={2} alignItems={"center"}>
-        <Typography variant="body1">Select a league:</Typography>
+        <Typography variant="body1">League:</Typography>
         <Select
           value={selectedLeagueID}
           size="small"
           onChange={(e) => {
-            setSelectedMatchDayID("");
             setSelectedLeagueID(e.target.value as number);
           }}
           sx={{ minWidth: 200, marginTop: 2 }}
@@ -83,29 +99,40 @@ const Schedule = () => {
             </MenuItem>
           ))}
         </Select>
-        <Typography variant="body1">Select a match day:</Typography>
+        <Typography variant="body1">Season:</Typography>
         <Select
-          value={selectedMatchDayID}
+          value={selectedSeasonID}
           size="small"
-          onChange={(e) => setSelectedMatchDayID(e.target.value)}
+          onChange={(e) => {
+            setSelectedSeasonID(e.target.value as number);
+          }}
           sx={{ minWidth: 200, marginTop: 2 }}
         >
-          {matchDays.map((matchDay) => (
-            <MenuItem key={matchDay.id} value={matchDay.id}>
-              {matchDay.day}
+          {seasons.map((season) => (
+            <MenuItem key={season.id} value={season.id}>
+              {season.year}
             </MenuItem>
           ))}
         </Select>
+        <Typography variant="body1">Match Day:</Typography>
+        <Select
+          value={selectedMatchDay}
+          size="small"
+          onChange={(e) => setSelectedMatchDay(e.target.value as number)}
+          sx={{ minWidth: 200, marginTop: 2 }}
+        >
+          {...seasonDaysSelectOptions}
+        </Select>
       </Box>
       <List>
-        {!selectedMatchDayID && (
+        {!selectedMatchDay && (
           <Typography variant="subtitle1">
             Select a match day to see matches.
           </Typography>
         )}
-        {selectedMatchDayID && selectedMatchDay && (
-          <Box key={selectedMatchDay.day} sx={{ marginTop: 2 }}>
-            <Typography variant="h6">Day {selectedMatchDay.day}</Typography>
+        {selectedMatchDay && selectedMatchDay && (
+          <Box key={selectedMatchDay} sx={{ marginTop: 2 }}>
+            <Typography variant="h6">Day {selectedMatchDay}</Typography>
             <Table>
               <TableHead>
                 <TableRow>
@@ -116,8 +143,14 @@ const Schedule = () => {
               <TableBody>
                 {matches.map((match) => (
                   <TableRow key={match.id}>
-                    <TableCell>{teamNames[match.homeTeamID]}</TableCell>
-                    <TableCell>{teamNames[match.awayTeamID]}</TableCell>
+                    <TableCell>
+                      {teamNames[match.homeTeamID]}{" "}
+                      {match.events?.homeTeam?.length}
+                    </TableCell>
+                    <TableCell>
+                      {teamNames[match.awayTeamID]}{" "}
+                      {match.events?.awayTeam?.length}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
