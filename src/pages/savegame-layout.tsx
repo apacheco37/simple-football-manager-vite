@@ -82,6 +82,14 @@ const SaveGameLayout = () => {
               <ListItemText primary={"Schedule"} />
             </ListItemButton>
           </ListItem>
+          <ListItem key={"Standings"} disablePadding>
+            <ListItemButton
+              onClick={() => navigate("standings")}
+              selected={location.pathname.endsWith("standings")}
+            >
+              <ListItemText primary={"Standings"} />
+            </ListItemButton>
+          </ListItem>
         </List>
         <Button onClick={handlePlayClick}>Play!</Button>
       </Drawer>

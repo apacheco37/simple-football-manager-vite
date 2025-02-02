@@ -61,6 +61,21 @@ export interface Season {
   lastDayPlayed?: number;
 }
 
+export interface Standings {
+  id?: number;
+  seasonID: number;
+  teams: {
+    [teamID: number]: {
+      points: number;
+      wins: number;
+      draws: number;
+      losses: number;
+      goalsFor: number;
+      goalsAgainst: number;
+    };
+  };
+}
+
 export interface League {
   id?: number;
   name: string;
@@ -86,6 +101,7 @@ export class SaveGameDB extends Dexie {
   leaguesDB!: Table<League>;
   seasonsDB!: Table<Season>;
   matchesDB!: Table<Match>;
+  standingsDB!: Table<Standings>;
 
   constructor(saveGameID: number) {
     super(`savegame-${saveGameID}`);
@@ -95,6 +111,7 @@ export class SaveGameDB extends Dexie {
       leaguesDB: "++id",
       seasonsDB: "++id, leagueID",
       matchesDB: "++id, homeTeamID, awayTeamID, day, seasonID",
+      standingsDB: "++id, &seasonID",
     });
   }
 }

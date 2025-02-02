@@ -9,6 +9,7 @@ import {
   Player,
   SaveGame,
   Season,
+  Standings,
   Team,
 } from "../db/db";
 
@@ -42,14 +43,17 @@ export const createNewGame = async (newSaveGameName: string) => {
 
   for (const seasonID of seasonIDs) {
     const leagueID = (await saveGameDB.seasonsDB.get(seasonID))?.leagueID;
-    const seasonTeams = await saveGameDB.teamsDB.where({ leagueID }).toArray();
-    if (!seasonTeams.length) {
+    const seasonTeamsIDs = (
+      await saveGameDB.teamsDB.where({ leagueID }).toArray()
+    ).map((team) => team.id!);
+    if (!seasonTeamsIDs.length) {
       throw new Error("No teams found for the season.");
     }
-    const matches = generateMatchesForSeasons(
-      seasonTeams.map((team) => team.id!),
-      seasonID
-    );
+
+    const standings = createStandings(seasonID, seasonTeamsIDs);
+    await saveGameDB.standingsDB.add(standings);
+
+    const matches = generateMatchesForSeasons(seasonTeamsIDs, seasonID);
     await saveGameDB.matchesDB.bulkAdd(matches);
   }
 
@@ -114,6 +118,26 @@ const createSeasons = (leagueIDs: number[], teamsPerLeague: number) => {
   });
 
   return seasons;
+};
+
+const createStandings = (seasonID: number, teamIDs: number[]) => {
+  const standings: Standings = {
+    seasonID,
+    teams: {},
+  };
+
+  teamIDs.forEach((teamID) => {
+    standings.teams[teamID] = {
+      points: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+    };
+  });
+
+  return standings;
 };
 
 const generateMatchesForSeasons = (teamIDs: number[], seasonID: number) => {
@@ -191,7 +215,7 @@ export const simulateMatchDay = async (saveGameID: number) => {
           .toArray()
       : await matchesDB.where({ seasonID: season.id, day: 1 }).toArray();
 
-    matches.forEach(async (match) => {
+    for (const match of matches) {
       const homeScore = faker.number.int({ min: 0, max: 5 });
       const awayScore = faker.number.int({ min: 0, max: 5 });
 
@@ -229,9 +253,55 @@ export const simulateMatchDay = async (saveGameID: number) => {
         // },
         events: { homeTeam: eventsHome, awayTeam: eventsAway },
       });
+      await updateStandings(
+        saveGameID,
+        season.id!,
+        homeScore,
+        awayScore,
+        match.homeTeamID,
+        match.awayTeamID
+      );
       await seasonsDB.update(season.id!, {
         lastDayPlayed: season.lastDayPlayed ? season.lastDayPlayed + 1 : 1,
       });
-    });
+    }
   });
+};
+
+const updateStandings = async (
+  saveGameID: number,
+  seasonID: number,
+  homeGoals: number,
+  awayGoals: number,
+  homeTeamID: number,
+  awayTeamID: number
+) => {
+  const { standingsDB } = getSaveGameDB(saveGameID);
+  const standings = await standingsDB.get({ seasonID: seasonID });
+
+  if (!standings) {
+    throw new Error("Standings not found.");
+  }
+
+  if (homeGoals > awayGoals) {
+    standings.teams[homeTeamID].points += 3;
+    standings.teams[homeTeamID].wins += 1;
+    standings.teams[awayTeamID].losses += 1;
+  } else if (homeGoals < awayGoals) {
+    standings.teams[awayTeamID].points += 3;
+    standings.teams[awayTeamID].wins += 1;
+    standings.teams[homeTeamID].losses += 1;
+  } else {
+    standings.teams[homeTeamID].points += 1;
+    standings.teams[awayTeamID].points += 1;
+    standings.teams[homeTeamID].draws += 1;
+    standings.teams[awayTeamID].draws += 1;
+  }
+
+  standings.teams[homeTeamID].goalsFor += homeGoals;
+  standings.teams[homeTeamID].goalsAgainst += awayGoals;
+  standings.teams[awayTeamID].goalsFor += awayGoals;
+  standings.teams[awayTeamID].goalsAgainst += homeGoals;
+
+  await standingsDB.put(standings, standings.id);
 };
