@@ -5,6 +5,7 @@ import {
   List,
   ListItem,
   Stack,
+  Checkbox,
 } from "@mui/material";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
@@ -16,6 +17,7 @@ import { createNewGame } from "../utils/utils";
 const SaveGames = () => {
   const saveGamesDB = getSaveGamesDB();
   const [newSaveGameNameInput, setNewSaveGameNameInput] = useState("");
+  const [randomizeTeams, setRandomizeTeams] = useState(false);
   const saveGames = useLiveQuery(() => saveGamesDB.toArray());
   const navigate = useNavigate();
 
@@ -23,7 +25,10 @@ const SaveGames = () => {
     if (!newSaveGameNameInput) return;
 
     try {
-      const saveGameID = await createNewGame(newSaveGameNameInput);
+      const saveGameID = await createNewGame(
+        newSaveGameNameInput,
+        randomizeTeams
+      );
 
       setNewSaveGameNameInput("");
       handleLoadSaveGame(saveGameID);
@@ -49,6 +54,13 @@ const SaveGames = () => {
         <Button variant="outlined" onClick={handleCreateSaveGame}>
           Create New Save Game
         </Button>
+        <Checkbox
+          checked={randomizeTeams}
+          onChange={(e) => setRandomizeTeams(e.target.checked)}
+        />
+        <Typography alignContent={"center"} marginLeft={"0 !important"}>
+          Randomize Teams
+        </Typography>
       </Stack>
       <Typography variant="h6">Or load an existing one:</Typography>
       <List>

@@ -12,8 +12,12 @@ import {
   Standings,
   Team,
 } from "../db/db";
+import { teamNames } from "./team-names";
 
-export const createNewGame = async (newSaveGameName: string) => {
+export const createNewGame = async (
+  newSaveGameName: string,
+  randomizeTeams: boolean = false
+) => {
   const saveGamesDB = getSaveGamesDB();
   const saveGameID = (await saveGamesDB.add(
     createSaveGame(newSaveGameName)
@@ -21,14 +25,17 @@ export const createNewGame = async (newSaveGameName: string) => {
 
   const saveGameDB = getSaveGameDB(saveGameID);
 
-  const leagueIDs = (await saveGameDB.leaguesDB.bulkAdd(createLeagues(4), {
-    allKeys: true,
-  })) as number[];
+  const leagueIDs = (await saveGameDB.leaguesDB.bulkAdd(
+    createLeagues(4, randomizeTeams),
+    {
+      allKeys: true,
+    }
+  )) as number[];
 
   const teamsPerLeague = 16;
 
   const teamIDs = (await saveGameDB.teamsDB.bulkAdd(
-    createTeams(leagueIDs, teamsPerLeague),
+    createTeams(leagueIDs, teamsPerLeague, randomizeTeams),
     {
       allKeys: true,
     }
@@ -68,29 +75,59 @@ const createSaveGame = (saveGameName: string) => {
   return saveGame;
 };
 
-const createLeagues = (leaguesQuantity: number) => {
+const createLeagues = (leaguesQuantity: number, randomizeTeams: boolean) => {
   const leagues: League[] = [];
 
-  for (let i = 0; i < leaguesQuantity; i++) {
+  if (randomizeTeams) {
+    for (let i = 0; i < leaguesQuantity; i++) {
+      leagues.push({
+        name: `League ${i}`,
+      });
+    }
+  } else {
     leagues.push({
-      name: `League ${i}`,
+      id: 0,
+      name: "Americas",
+    });
+    leagues.push({
+      id: 1,
+      name: "Europe",
+    });
+    leagues.push({
+      id: 2,
+      name: "Asia",
+    });
+    leagues.push({
+      id: 3,
+      name: "Africa",
     });
   }
 
   return leagues;
 };
 
-const createTeams = (leagueIDs: number[], teamsQuantity: number) => {
+const createTeams = (
+  leagueIDs: number[],
+  teamsQuantity: number,
+  randomizeTeams: boolean
+) => {
   const teams: Team[] = [];
 
-  leagueIDs.forEach((leagueID) => {
-    for (let i = 0; i < teamsQuantity; i++) {
-      teams.push({
-        name: generateRandomTeamName(),
-        leagueID,
-      });
-    }
-  });
+  if (randomizeTeams) {
+    leagueIDs.forEach((leagueID) => {
+      for (let i = 0; i < teamsQuantity; i++) {
+        teams.push({
+          name: generateRandomTeamName(),
+          leagueID,
+        });
+      }
+    });
+  } else {
+    teams.push(...teamNames.americas.map((name) => ({ name, leagueID: 0 })));
+    teams.push(...teamNames.europe.map((name) => ({ name, leagueID: 1 })));
+    teams.push(...teamNames.asia.map((name) => ({ name, leagueID: 2 })));
+    teams.push(...teamNames.africa.map((name) => ({ name, leagueID: 3 })));
+  }
 
   return teams;
 };

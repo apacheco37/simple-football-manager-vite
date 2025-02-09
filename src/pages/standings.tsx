@@ -39,7 +39,7 @@ const Standings = () => {
 
   const seasons = useLiveQuery(
     () =>
-      selectedLeagueID
+      selectedLeagueID !== ""
         ? seasonsDB.where({ leagueID: selectedLeagueID }).toArray()
         : [],
     [selectedLeagueID],
@@ -54,7 +54,7 @@ const Standings = () => {
 
   const standings = useLiveQuery(
     () =>
-      selectedSeasonID
+      selectedSeasonID !== ""
         ? standingsDB.get({ seasonID: selectedSeasonID })
         : undefined,
     [selectedSeasonID]

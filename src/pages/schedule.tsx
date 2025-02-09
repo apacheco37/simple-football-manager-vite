@@ -41,7 +41,7 @@ const Schedule = () => {
 
   const seasons = useLiveQuery(
     () =>
-      selectedLeagueID
+      selectedLeagueID !== ""
         ? seasonsDB.where({ leagueID: selectedLeagueID }).toArray()
         : [],
     [selectedLeagueID],
@@ -71,7 +71,7 @@ const Schedule = () => {
 
   const matches = useLiveQuery(
     () =>
-      selectedSeasonID && selectedMatchDay
+      selectedSeasonID !== "" && selectedMatchDay !== ""
         ? matchesDB
             .where({ seasonID: selectedSeasonID, day: selectedMatchDay })
             .toArray()
