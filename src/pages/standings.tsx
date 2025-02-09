@@ -17,6 +17,7 @@ import { SaveGameContext } from "./savegame-layout";
 const Standings = () => {
   const {
     saveGameDB: { teamsDB, leaguesDB, standingsDB, seasonsDB },
+    saveGame: { humanTeamID },
   } = useContext(SaveGameContext);
   const [selectedLeagueID, setSelectedLeagueID] = useState<number | "">("");
   const [selectedSeasonID, setSelectedSeasonID] = useState<number | "">("");
@@ -59,6 +60,9 @@ const Standings = () => {
         : undefined,
     [selectedSeasonID]
   );
+
+  const humanTeamCellStyle = (teamID: string) =>
+    Number(teamID) === humanTeamID ? { fontWeight: "bold" } : {};
 
   return (
     <Box>
@@ -121,15 +125,29 @@ const Standings = () => {
               )
               .map(([teamID, teamStats], index) => (
                 <TableRow key={teamID}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>{teamNames[Number(teamID)]}</TableCell>
-                  {/* <TableCell>{standing[1].played}</TableCell> */}
-                  <TableCell>{teamStats.wins}</TableCell>
-                  <TableCell>{teamStats.draws}</TableCell>
-                  <TableCell>{teamStats.losses}</TableCell>
-                  <TableCell>{teamStats.goalsFor}</TableCell>
-                  <TableCell>{teamStats.goalsAgainst}</TableCell>
-                  <TableCell>
+                  <TableCell sx={humanTeamCellStyle(teamID)}>
+                    {index + 1}
+                  </TableCell>
+                  <TableCell sx={humanTeamCellStyle(teamID)}>
+                    {teamNames[Number(teamID)]}
+                  </TableCell>
+                  {/* <TableCell sx={{ fontWeight: isHumanTeam(teamID) ? "bold" : undefined }}>{standing[1].played}</TableCell> */}
+                  <TableCell sx={humanTeamCellStyle(teamID)}>
+                    {teamStats.wins}
+                  </TableCell>
+                  <TableCell sx={humanTeamCellStyle(teamID)}>
+                    {teamStats.draws}
+                  </TableCell>
+                  <TableCell sx={humanTeamCellStyle(teamID)}>
+                    {teamStats.losses}
+                  </TableCell>
+                  <TableCell sx={humanTeamCellStyle(teamID)}>
+                    {teamStats.goalsFor}
+                  </TableCell>
+                  <TableCell sx={humanTeamCellStyle(teamID)}>
+                    {teamStats.goalsAgainst}
+                  </TableCell>
+                  <TableCell sx={humanTeamCellStyle(teamID)}>
                     {teamStats.goalsFor - teamStats.goalsAgainst}
                   </TableCell>
                   <TableCell>{teamStats.points}</TableCell>

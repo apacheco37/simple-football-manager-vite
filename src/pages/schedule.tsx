@@ -18,6 +18,7 @@ import { SaveGameContext } from "./savegame-layout";
 const Schedule = () => {
   const {
     saveGameDB: { leaguesDB, teamsDB, matchesDB, seasonsDB },
+    saveGame: { humanTeamID },
   } = useContext(SaveGameContext);
   const [selectedLeagueID, setSelectedLeagueID] = useState<number | "">("");
   const [selectedSeasonID, setSelectedSeasonID] = useState<number | "">("");
@@ -79,6 +80,11 @@ const Schedule = () => {
     [selectedSeasonID, selectedMatchDay],
     []
   );
+
+  const humanTeamCellStyle = (homeTeamID: number, awayTeamID: number) =>
+    homeTeamID === humanTeamID || awayTeamID === humanTeamID
+      ? { fontWeight: "bold" }
+      : {};
 
   return (
     <Box>
@@ -143,11 +149,21 @@ const Schedule = () => {
               <TableBody>
                 {matches.map((match) => (
                   <TableRow key={match.id}>
-                    <TableCell>
+                    <TableCell
+                      sx={humanTeamCellStyle(
+                        match.homeTeamID,
+                        match.awayTeamID
+                      )}
+                    >
                       {teamNames[match.homeTeamID]}{" "}
                       {match.events?.homeTeam?.length}
                     </TableCell>
-                    <TableCell>
+                    <TableCell
+                      sx={humanTeamCellStyle(
+                        match.homeTeamID,
+                        match.awayTeamID
+                      )}
+                    >
                       {teamNames[match.awayTeamID]}{" "}
                       {match.events?.awayTeam?.length}
                     </TableCell>

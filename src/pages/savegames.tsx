@@ -18,8 +18,10 @@ const SaveGames = () => {
   const saveGamesDB = getSaveGamesDB();
   const [newSaveGameNameInput, setNewSaveGameNameInput] = useState("");
   const [randomizeTeams, setRandomizeTeams] = useState(false);
-  const saveGames = useLiveQuery(() => saveGamesDB.toArray());
+  const [spectatorMode, setSpectatorMode] = useState(false);
   const navigate = useNavigate();
+
+  const saveGames = useLiveQuery(() => saveGamesDB.toArray());
 
   const handleCreateSaveGame = async () => {
     if (!newSaveGameNameInput) return;
@@ -27,7 +29,8 @@ const SaveGames = () => {
     try {
       const saveGameID = await createNewGame(
         newSaveGameNameInput,
-        randomizeTeams
+        randomizeTeams,
+        spectatorMode
       );
 
       setNewSaveGameNameInput("");
@@ -60,6 +63,13 @@ const SaveGames = () => {
         />
         <Typography alignContent={"center"} marginLeft={"0 !important"}>
           Randomize Teams
+        </Typography>
+        <Checkbox
+          checked={spectatorMode}
+          onChange={(e) => setSpectatorMode(e.target.checked)}
+        />
+        <Typography alignContent={"center"} marginLeft={"0 !important"}>
+          Spectator Mode
         </Typography>
       </Stack>
       <Typography variant="h6">Or load an existing one:</Typography>

@@ -16,7 +16,8 @@ import { teamNames } from "./team-names";
 
 export const createNewGame = async (
   newSaveGameName: string,
-  randomizeTeams: boolean = false
+  randomizeTeams: boolean = false,
+  spectatorMode: boolean = false
 ) => {
   const saveGamesDB = getSaveGamesDB();
   const saveGameID = (await saveGamesDB.add(
@@ -40,6 +41,10 @@ export const createNewGame = async (
       allKeys: true,
     }
   )) as number[];
+
+  if (!spectatorMode) {
+    await saveGamesDB.update(saveGameID, { humanTeamID: teamIDs[0] });
+  }
 
   await saveGameDB.playersDB.bulkAdd(createPlayers(20, teamIDs));
 
