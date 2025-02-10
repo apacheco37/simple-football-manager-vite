@@ -3,6 +3,7 @@ import Dexie, { Table } from "dexie";
 export interface SaveGame {
   id?: number;
   name: string;
+  creationDate: Date;
   humanTeamID?: number;
 }
 

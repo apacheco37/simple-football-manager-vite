@@ -79,6 +79,7 @@ const SaveGames = () => {
             <Button onClick={() => handleLoadSaveGame(saveGame.id!)}>
               {saveGame.name}
             </Button>
+            <Typography variant="subtitle2">{`(created: ${saveGame.creationDate?.toLocaleString()})`}</Typography>
           </ListItem>
         ))}
       </List>

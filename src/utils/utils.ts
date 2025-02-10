@@ -75,6 +75,7 @@ export const createNewGame = async (
 const createSaveGame = (saveGameName: string) => {
   const saveGame: SaveGame = {
     name: saveGameName,
+    creationDate: new Date(),
   };
 
   return saveGame;
