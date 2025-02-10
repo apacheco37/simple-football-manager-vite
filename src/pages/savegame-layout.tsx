@@ -53,17 +53,22 @@ const SaveGameLayout = () => {
       >
         <Toolbar />
         <List>
+          <ListItem key={"My Players"} disablePadding>
+            <ListItemButton
+              onClick={() => navigate(`teams/${saveGame.humanTeamID}/players`)}
+              selected={location.pathname.endsWith(
+                `teams/${saveGame.humanTeamID}/players`
+              )}
+            >
+              <ListItemText primary={"My Players"} />
+            </ListItemButton>
+          </ListItem>
           <ListItem key={"Teams"} disablePadding>
             <ListItemButton
               onClick={() => navigate("teams")}
               selected={location.pathname.endsWith("teams")}
             >
               <ListItemText primary={"Teams"} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key={"Players"} disablePadding>
-            <ListItemButton /* onClick={() => navigate("players")} */>
-              <ListItemText primary={"Players"} />
             </ListItemButton>
           </ListItem>
           <ListItem key={"Leagues"} disablePadding>

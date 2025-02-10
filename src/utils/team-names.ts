@@ -1,6 +1,6 @@
 export const teamNames = {
   americas: [
-    "Buenos Aires Tangos", // Argentina – Tango music and dance
+    "Buenos Aires Gauchos", // Argentina – Gauchos are iconic Argentine cowboys
     "Brasília Jaguars", // Brazil – Jaguars are native to the Amazon
     "Ottawa Lumberjacks", // Canada – Lumber industry is significant
     "Mexico City Aztecs", // Mexico – Aztec civilization
@@ -49,7 +49,7 @@ export const teamNames = {
     "Rabat Atlas Lions", // Morocco – Named after the national football team
     "Antananarivo Lemurs", // Madagascar – Lemurs are endemic to Madagascar
     "Bamako Scorpions", // Mali – Scorpions are common in the desert
-    "Abuja Elephants", // Nigeria – Reference to native elephants
+    "Abuja Vipers", // Nigeria – Vipers are common in the region
     "Maputo Mariners", // Mozambique – Coastal trade and maritime history
     "Dodoma Leopards", // Tanzania – Big cats native to the Serengeti
   ],
@@ -61,7 +61,7 @@ export const teamNames = {
     "Seoul Tigers", // South Korea – The tiger is a national symbol
     "Jakarta Krakatoas", // Indonesia – Krakatoa is a famous volcano
     "Bangkok Cobras", // Thailand – Cobras are common in Thai culture
-    "Hanoi Dragons", // Vietnam – Dragons are a national symbol
+    "Hanoi Phoenixes", // Vietnam – Phoenix is a mythical symbol in Vietnamese culture
     "Kuala Lumpur Hornbills", // Malaysia – Rhinoceros hornbill is the national bird
     "Manila Pearl Divers", // Philippines – Pearls were historically traded
     "Islamabad Falcons", // Pakistan – Falcons are revered in Pakistan
