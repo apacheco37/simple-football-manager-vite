@@ -6,6 +6,11 @@ import {
   ListItem,
   Stack,
   Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
@@ -13,12 +18,15 @@ import { useNavigate } from "react-router-dom";
 
 import { getSaveGamesDB } from "../db/db";
 import { createNewGame } from "../utils/utils";
+import Dexie from "dexie";
 
 const SaveGames = () => {
   const saveGamesDB = getSaveGamesDB();
   const [newSaveGameNameInput, setNewSaveGameNameInput] = useState("");
   const [randomizeTeams, setRandomizeTeams] = useState(false);
   const [spectatorMode, setSpectatorMode] = useState(false);
+  const [openDeleteAllConfirmationDialog, setOpenDeleteAllConfirmationDialog] =
+    useState(false);
   const navigate = useNavigate();
 
   const saveGames = useLiveQuery(() => saveGamesDB.toArray());
@@ -42,6 +50,25 @@ const SaveGames = () => {
 
   const handleLoadSaveGame = (saveGameID: number) => {
     navigate(`${saveGameID}/teams`);
+  };
+
+  const handleDeleteAllSaveGames = async () => {
+    await saveGamesDB.clear();
+    const dbNames = await Dexie.getDatabaseNames();
+    await Promise.all(dbNames.map((dbName) => Dexie.delete(dbName)));
+  };
+
+  const handleConfirmDeleteAllSaveGames = async () => {
+    await handleDeleteAllSaveGames();
+    setOpenDeleteAllConfirmationDialog(false);
+  };
+
+  const handleClickOpenDeleteAllConfirmationDialog = () => {
+    setOpenDeleteAllConfirmationDialog(true);
+  };
+
+  const handleCloseDeleteAllConfirmationDialog = () => {
+    setOpenDeleteAllConfirmationDialog(false);
   };
 
   return (
@@ -83,6 +110,40 @@ const SaveGames = () => {
           </ListItem>
         ))}
       </List>
+      {(saveGames?.length ?? 0) > 0 && (
+        <Button
+          variant="outlined"
+          onClick={handleClickOpenDeleteAllConfirmationDialog}
+          sx={{ maxWidth: "fit-content" }}
+          color="error"
+        >
+          Delete All Save Games
+        </Button>
+      )}
+      <Dialog
+        open={openDeleteAllConfirmationDialog}
+        onClose={handleCloseDeleteAllConfirmationDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Confirm All Save Games Deletion
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete all save games? This action cannot
+            be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteAllConfirmationDialog}>
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDeleteAllSaveGames} color="error">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 };
