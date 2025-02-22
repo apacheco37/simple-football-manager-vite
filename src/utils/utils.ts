@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 
 import {
+  ALL_FORMATIONS,
   ALL_POSITIONS,
   getSaveGameDB,
   getSaveGamesDB,
@@ -11,6 +12,7 @@ import {
   Season,
   Standings,
   Team,
+  TeamLineup,
 } from "../db/db";
 import { teamNames } from "./team-names";
 
@@ -46,7 +48,17 @@ export const createNewGame = async (
     await saveGamesDB.update(saveGameID, { humanTeamID: teamIDs[0] });
   }
 
-  await saveGameDB.playersDB.bulkAdd(createPlayers(20, teamIDs));
+  const playerIDs = await saveGameDB.playersDB.bulkAdd(
+    createPlayers(20, teamIDs),
+    { allKeys: true }
+  );
+  const players = await saveGameDB.playersDB.bulkGet(playerIDs);
+  await saveGameDB.teamLineupsDB.bulkAdd(
+    createLineups(
+      teamIDs,
+      players.filter((player) => player !== undefined)
+    )
+  );
 
   const seasonIDs = (await saveGameDB.seasonsDB.bulkAdd(
     createSeasons(leagueIDs, teamsPerLeague),
@@ -146,6 +158,39 @@ const createPlayers = (playersQuantity: number, teamIDs: number[]) => {
   });
 
   return players;
+};
+
+const createLineups = (teamIDs: number[], players: Player[]) => {
+  const lineups: TeamLineup[] = [];
+
+  teamIDs.forEach((teamID) => {
+    const teamPlayers = players.filter((player) => player.teamID === teamID);
+
+    const { defenders, midfielders, strikers } =
+      ALL_FORMATIONS[Math.floor(Math.random() * (ALL_FORMATIONS.length - 1))];
+
+    const lineup: TeamLineup = {
+      teamID,
+      goalkeeperID: teamPlayers[0].id!,
+      defenders: defenders.map((position, index) => ({
+        position,
+        playerID: teamPlayers[index + 1].id!,
+      })),
+      midfielders: midfielders.map((position, index) => ({
+        position,
+        playerID: teamPlayers[index + 1 + defenders.length].id!,
+      })),
+      strikers: strikers.map((position, index) => ({
+        position,
+        playerID:
+          teamPlayers[index + 1 + defenders.length + midfielders.length].id!,
+      })),
+    };
+
+    lineups.push(lineup);
+  });
+
+  return lineups;
 };
 
 const createSeasons = (leagueIDs: number[], teamsPerLeague: number) => {
