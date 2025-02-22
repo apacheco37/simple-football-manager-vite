@@ -55,6 +55,14 @@ export interface Match {
   events?: { homeTeam: MatchEvent[]; awayTeam: MatchEvent[] };
 }
 
+export interface TeamLineup {
+  teamID: number;
+  goalkeeperID: number;
+  defenders: { position: Position; playerID: number }[];
+  midfielders: { position: Position; playerID: number }[];
+  strikers: { position: Position; playerID: number }[];
+}
+
 export interface Season {
   id?: number;
   year: number;
@@ -85,17 +93,69 @@ export interface League {
 
 export const ALL_POSITIONS = [
   "GK",
-  "DFC",
-  "DFL",
-  "DFR",
-  "MFC",
-  "MFL",
-  "MFR",
-  "STC",
-  "STL",
-  "STR",
+  "DF-C",
+  "DF-L",
+  "DF-R",
+  "MF-C",
+  "MF-L",
+  "MF-R",
+  "ST-C",
+  "ST-L",
+  "ST-R",
 ] as const;
 export type Position = (typeof ALL_POSITIONS)[number];
+
+export const ALL_FORMATIONS: Formation[] = [
+  {
+    name: "3-5-2",
+    defenders: ["DF-C", "DF-C", "DF-C"],
+    midfielders: ["MF-L", "MF-C", "MF-C", "MF-C", "MF-R"],
+    strikers: ["ST-C", "ST-C"],
+  },
+  {
+    name: "3-4-3",
+    defenders: ["DF-C", "DF-C", "DF-C"],
+    midfielders: ["MF-L", "MF-C", "MF-C", "MF-R"],
+    strikers: ["ST-L", "ST-C", "ST-R"],
+  },
+  {
+    name: "4-5-1",
+    defenders: ["DF-L", "DF-C", "DF-C", "DF-R"],
+    midfielders: ["MF-L", "MF-C", "MF-C", "MF-C", "MF-R"],
+    strikers: ["ST-C"],
+  },
+  {
+    name: "4-4-2",
+    defenders: ["DF-L", "DF-C", "DF-C", "DF-R"],
+    midfielders: ["MF-L", "MF-C", "MF-C", "MF-R"],
+    strikers: ["ST-C", "ST-C"],
+  },
+  {
+    name: "4-3-3",
+    defenders: ["DF-L", "DF-C", "DF-C", "DF-R"],
+    midfielders: ["MF-C", "MF-C", "MF-C"],
+    strikers: ["ST-L", "ST-C", "ST-R"],
+  },
+  {
+    name: "5-4-1",
+    defenders: ["DF-L", "DF-C", "DF-C", "DF-C", "DF-R"],
+    midfielders: ["MF-L", "MF-C", "MF-C", "MF-R"],
+    strikers: ["ST-C"],
+  },
+  {
+    name: "5-3-2",
+    defenders: ["DF-L", "DF-C", "DF-C", "DF-C", "DF-R"],
+    midfielders: ["MF-C", "MF-C", "MF-C"],
+    strikers: ["ST-C", "ST-C"],
+  },
+];
+
+export type Formation = {
+  name: string;
+  defenders: Position[];
+  midfielders: Position[];
+  strikers: Position[];
+};
 
 export class SaveGameDB extends Dexie {
   teamsDB!: Table<Team>;
@@ -104,6 +164,7 @@ export class SaveGameDB extends Dexie {
   seasonsDB!: Table<Season>;
   matchesDB!: Table<Match>;
   standingsDB!: Table<Standings>;
+  teamLineupsDB!: Table<TeamLineup>;
 
   constructor(saveGameID: number) {
     super(`savegame-${saveGameID}`);
@@ -114,6 +175,7 @@ export class SaveGameDB extends Dexie {
       seasonsDB: "++id, leagueID",
       matchesDB: "++id, homeTeamID, awayTeamID, day, seasonID",
       standingsDB: "++id, &seasonID",
+      teamLineupsDB: "teamID",
     });
   }
 }

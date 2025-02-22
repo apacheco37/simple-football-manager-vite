@@ -10,6 +10,7 @@ import Leagues from "./leagues";
 import LeagueDetails from "./league-details";
 import Schedule from "./schedule";
 import Standings from "./standings";
+import Lineup from "./lineup";
 
 const AppRoutes = () => {
   return (
@@ -25,6 +26,7 @@ const AppRoutes = () => {
           <Route path="leagues/:leagueid" element={<LeagueDetails />} />
           <Route path="schedule" element={<Schedule />} />
           <Route path="standings" element={<Standings />} />
+          <Route path="lineup" element={<Lineup />} />
         </Route>
 
         {/* Using path="*"" means "match anything", so this route

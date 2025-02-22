@@ -14,7 +14,7 @@ const Teams = () => {
 
   return (
     <>
-      <Typography variant="h6">Teams:</Typography>
+      <Typography variant="h6">All Teams:</Typography>
       <List>
         {teams.map((team) => (
           <ListItem key={team.id}>
