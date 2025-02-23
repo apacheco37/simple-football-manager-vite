@@ -1,7 +1,7 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
-import { List, Stack, Typography } from "@mui/material";
+import { Box, List, Stack, Tab, Tabs, Typography } from "@mui/material";
 
 import { SaveGameContext } from "./savegame-layout";
 
@@ -10,6 +10,7 @@ const MatchDetails = () => {
   const {
     saveGameDB: { matchesDB, teamsDB, playersDB },
   } = useContext(SaveGameContext);
+  const [activeSection, setActiveSection] = useState(0);
 
   const match = useLiveQuery(() => matchesDB.get(Number(matchid)), [matchid]);
   const teams = useLiveQuery(() => {
@@ -49,18 +50,31 @@ const MatchDetails = () => {
           awayGoals ?? ""
         } ${teams?.[1]?.name}`}</Typography>
       }
-      <Typography variant="h6">Events:</Typography>
-      <List>
-        {eventsOrderedByTime.map((event, index) => (
-          <Typography key={index}>
-            {event.minute} - {event.type} -{" "}
-            {
-              players?.find((player) => event.player1ID === player?.id)
-                ?.lastName
-            }
-          </Typography>
-        ))}
-      </List>
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={activeSection}
+          onChange={(_e, newValue) => setActiveSection(newValue)}
+        >
+          <Tab label="Events" />
+          <Tab label="Ratings" />
+          <Tab label="Lineups" />
+        </Tabs>
+      </Box>
+      {activeSection === 0 && (
+        <List>
+          {eventsOrderedByTime.map((event, index) => (
+            <Typography key={index}>
+              {event.minute}' - {event.type} -{" "}
+              {
+                players?.find((player) => event.player1ID === player?.id)
+                  ?.lastName
+              }
+            </Typography>
+          ))}
+        </List>
+      )}
+      {activeSection === 1 && <>Ratings</>}
+      {activeSection === 2 && <>Lineups</>}
     </Stack>
   );
 };
