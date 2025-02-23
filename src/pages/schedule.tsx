@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   List,
   MenuItem,
   Select,
@@ -10,15 +11,17 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { useContext, useEffect, useMemo, useState } from "react";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { SaveGameContext } from "./savegame-layout";
 
 const Schedule = () => {
   const {
     saveGameDB: { leaguesDB, teamsDB, matchesDB, seasonsDB },
-    saveGame: { humanTeamID },
+    saveGame: { humanTeamID, id },
   } = useContext(SaveGameContext);
   const [selectedLeagueID, setSelectedLeagueID] = useState<number | "">("");
   const [selectedSeasonID, setSelectedSeasonID] = useState<number | "">("");
@@ -144,6 +147,7 @@ const Schedule = () => {
                 <TableRow>
                   <TableCell>Home</TableCell>
                   <TableCell>Away</TableCell>
+                  <TableCell>See Details</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -166,6 +170,15 @@ const Schedule = () => {
                     >
                       {teamNames[match.awayTeamID]}{" "}
                       {match.events?.awayTeam?.length}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        component={Link}
+                        to={`/save-games/${id}/matches/${match.id}`}
+                        sx={{ minWidth: 0 }}
+                      >
+                        <VisibilityIcon />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

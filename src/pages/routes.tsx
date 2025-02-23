@@ -11,6 +11,7 @@ import LeagueDetails from "./league-details";
 import Schedule from "./schedule";
 import Standings from "./standings";
 import Lineup from "./lineup";
+import MatchDetails from "./match-details";
 
 const AppRoutes = () => {
   return (
@@ -24,6 +25,7 @@ const AppRoutes = () => {
           <Route path="players/:playerid" element={<PlayerDetails />} />
           <Route path="leagues" element={<Leagues />} />
           <Route path="leagues/:leagueid" element={<LeagueDetails />} />
+          <Route path="matches/:matchid" element={<MatchDetails />} />
           <Route path="schedule" element={<Schedule />} />
           <Route path="standings" element={<Standings />} />
           <Route path="lineup" element={<Lineup />} />
