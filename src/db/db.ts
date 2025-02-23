@@ -27,7 +27,7 @@ export interface MatchEvent {
   minute: number;
   type: "goal" | "yellow_card" | "red_card" | "injury" | "substitution";
   player1ID: number;
-  player2ID: number | null;
+  player2ID?: number;
 }
 
 export interface MatchTeamRatings {

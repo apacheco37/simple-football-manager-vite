@@ -7,6 +7,7 @@ import {
   getSaveGamesDB,
   League,
   Match,
+  MatchEvent,
   Player,
   SaveGame,
   Season,
@@ -293,7 +294,7 @@ const generateRandomTeamName = () => {
 };
 
 export const simulateMatchDay = async (saveGameID: number) => {
-  const { seasonsDB, matchesDB } = getSaveGameDB(saveGameID);
+  const { seasonsDB, matchesDB, teamLineupsDB } = getSaveGameDB(saveGameID);
 
   // this sucks, should be improved ffs
   (await seasonsDB.toArray()).forEach(async (season) => {
@@ -303,32 +304,41 @@ export const simulateMatchDay = async (saveGameID: number) => {
           .toArray()
       : await matchesDB.where({ seasonID: season.id, day: 1 }).toArray();
 
-    for (const match of matches) {
+    matches.forEach(async (match) => {
+      const homeLineup = await teamLineupsDB.get({
+        teamID: match.homeTeamID,
+      });
+      if (!homeLineup) {
+        throw new Error("Home lineup not found.");
+      }
+      const awayLineup = await teamLineupsDB.get({
+        teamID: match.awayTeamID,
+      });
+      if (!awayLineup) {
+        throw new Error("Away lineup not found.");
+      }
+
       const homeScore = faker.number.int({ min: 0, max: 5 });
       const awayScore = faker.number.int({ min: 0, max: 5 });
 
-      const eventsHome = [];
-      const eventsAway = [];
+      const eventsHome: MatchEvent[] = [];
+      const eventsAway: MatchEvent[] = [];
 
       for (let i = 0; i < homeScore; i++) {
-        const playerID = 1; // TODO
         const minute = faker.number.int({ min: 1, max: 90 });
-        const event = {
+        const event: MatchEvent = {
           type: "goal",
-          teamID: match.homeTeamID,
-          playerID,
+          player1ID: homeLineup.strikers[0].playerID,
           minute,
         };
         eventsHome.push(event);
       }
 
       for (let i = 0; i < awayScore; i++) {
-        const playerID = 1; // TODO
         const minute = faker.number.int({ min: 1, max: 90 });
-        const event = {
+        const event: MatchEvent = {
           type: "goal",
-          teamID: match.awayTeamID,
-          playerID,
+          player1ID: awayLineup.strikers[0].playerID,
           minute,
         };
         eventsAway.push(event);
@@ -352,7 +362,7 @@ export const simulateMatchDay = async (saveGameID: number) => {
       await seasonsDB.update(season.id!, {
         lastDayPlayed: season.lastDayPlayed ? season.lastDayPlayed + 1 : 1,
       });
-    }
+    });
   });
 };
 
