@@ -350,6 +350,10 @@ export const simulateMatchDay = async (saveGameID: number) => {
         //   awayTeam: generateRandomTeamRatings(),
         // },
         events: { homeTeam: eventsHome, awayTeam: eventsAway },
+        lineups: {
+          homeTeam: homeLineup,
+          awayTeam: awayLineup,
+        },
       });
       await updateStandings(
         saveGameID,

@@ -37,11 +37,11 @@ export interface MatchTeamRatings {
   goalkeeping: number;
 }
 
-export interface MatchTeamPlayer {
-  playerID: number;
-  position: Position;
-  skill: number;
-}
+// export interface MatchTeamPlayer {
+//   playerID: number;
+//   position: Position;
+//   skill: number;
+// }
 
 export interface Match {
   id?: number;
@@ -50,7 +50,7 @@ export interface Match {
   day: number;
   seasonID: number;
   neutral?: true;
-  lineups?: { homeTeam: MatchTeamPlayer[]; awayTeam: MatchTeamPlayer[] };
+  lineups?: { homeTeam: TeamLineup; awayTeam: TeamLineup };
   ratings?: { homeTeam: MatchTeamRatings; awayTeam: MatchTeamRatings };
   events?: { homeTeam: MatchEvent[]; awayTeam: MatchEvent[] };
 }

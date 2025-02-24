@@ -1,9 +1,18 @@
 import { useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Box, List, Stack, Tab, Tabs, Typography } from "@mui/material";
+import {
+  Box,
+  List,
+  ListItem,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
 
 import { SaveGameContext } from "./savegame-layout";
+import { Player, TeamLineup } from "../db/db";
 
 const MatchDetails = () => {
   const { matchid } = useParams();
@@ -20,12 +29,23 @@ const MatchDetails = () => {
     return [];
   }, [match?.homeTeamID, match?.awayTeamID]);
 
-  const players = useLiveQuery(() => {
-    const playerIDs = match?.events?.homeTeam
-      .map((event) => event.player1ID)
-      .concat(match?.events?.awayTeam.map((event) => event.player1ID));
-    return playerIDs?.length ? playersDB.bulkGet(playerIDs) : [];
-  }, [match?.events]);
+  const homePlayers = useLiveQuery<Player[], Player[]>(
+    () =>
+      playersDB
+        .filter((player) => player.teamID === match?.homeTeamID)
+        .toArray(),
+    [match?.homeTeamID],
+    []
+  );
+
+  const awayPlayers = useLiveQuery<Player[], Player[]>(
+    () =>
+      playersDB
+        .filter((player) => player.teamID === match?.awayTeamID)
+        .toArray(),
+    [match?.awayTeamID],
+    []
+  );
 
   if (!match) {
     return <div>Match Not Found</div>;
@@ -66,17 +86,78 @@ const MatchDetails = () => {
             <Typography key={index}>
               {event.minute}' - {event.type} -{" "}
               {
-                players?.find((player) => event.player1ID === player?.id)
-                  ?.lastName
+                [...homePlayers, ...awayPlayers].find(
+                  (player) => event.player1ID === player?.id
+                )?.lastName
               }
             </Typography>
           ))}
         </List>
       )}
       {activeSection === 1 && <>Ratings</>}
-      {activeSection === 2 && <>Lineups</>}
+      {activeSection === 2 && (
+        <Stack direction={"row"}>
+          <MatchDetailsLineup
+            teamLineup={match.lineups?.homeTeam}
+            players={homePlayers}
+          />
+          <MatchDetailsLineup
+            teamLineup={match.lineups?.awayTeam}
+            players={awayPlayers}
+          />
+        </Stack>
+      )}
     </Stack>
   );
 };
 
 export default MatchDetails;
+
+const MatchDetailsLineup = ({
+  teamLineup,
+  players,
+}: {
+  teamLineup?: TeamLineup;
+  players: Player[];
+}) => {
+  if (!teamLineup) {
+    return <div>Lineup not found</div>;
+  }
+
+  return (
+    <Stack>
+      <Typography variant="h6">Goalkeeper:</Typography>
+      <List>
+        <ListItem key={teamLineup.goalkeeperID}>{`GK - ${
+          players.find((player) => player.id === teamLineup.goalkeeperID)
+            ?.lastName
+        }`}</ListItem>
+      </List>
+      <Typography variant="h6">Defenders:</Typography>
+      <List>
+        {teamLineup.defenders.map((defender) => (
+          <ListItem key={defender.playerID}>{`${defender.position} - ${
+            players.find((player) => player.id === defender.playerID)?.lastName
+          }`}</ListItem>
+        ))}
+      </List>
+      <Typography variant="h6">Midfielders:</Typography>
+      <List>
+        {teamLineup.midfielders.map((midfielder) => (
+          <ListItem key={midfielder.playerID}>{`${midfielder.position} - ${
+            players.find((player) => player.id === midfielder.playerID)
+              ?.lastName
+          }`}</ListItem>
+        ))}
+      </List>
+      <Typography variant="h6">Strikers:</Typography>
+      <List>
+        {teamLineup.strikers.map((striker) => (
+          <ListItem key={striker.playerID}>{`${striker.position} - ${
+            players.find((player) => player.id === striker.playerID)?.lastName
+          }`}</ListItem>
+        ))}
+      </List>
+    </Stack>
+  );
+};
