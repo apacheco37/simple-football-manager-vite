@@ -94,7 +94,30 @@ const MatchDetails = () => {
           ))}
         </List>
       )}
-      {activeSection === 1 && <>Ratings</>}
+      {activeSection === 1 && (
+        <Stack direction={"row"} spacing={2}>
+          <Stack spacing={2}>
+            <Typography>
+              Goalkeeping: {match.ratings?.homeTeam.goalkeeping}
+            </Typography>
+            <Typography>Defense: {match.ratings?.homeTeam.defense}</Typography>
+            <Typography>
+              Midfield: {match.ratings?.homeTeam.midfield}
+            </Typography>
+            <Typography>Attack: {match.ratings?.homeTeam.attack}</Typography>
+          </Stack>
+          <Stack spacing={2}>
+            <Typography>
+              Goalkeeping: {match.ratings?.awayTeam.goalkeeping}
+            </Typography>
+            <Typography>Defense: {match.ratings?.awayTeam.defense}</Typography>
+            <Typography>
+              Midfield: {match.ratings?.awayTeam.midfield}
+            </Typography>
+            <Typography>Attack: {match.ratings?.awayTeam.attack}</Typography>
+          </Stack>
+        </Stack>
+      )}
       {activeSection === 2 && (
         <Stack direction={"row"}>
           <MatchDetailsLineup
@@ -132,7 +155,12 @@ const MatchDetailsLineup = ({
     <Stack>
       <Typography variant="h6">Goalkeeper:</Typography>
       <List>
-        <ListItem key={teamLineup.goalkeeperID}>{`GK - ${
+        <ListItem
+          key={teamLineup.goalkeeperID}
+          component={Link}
+          to={`/save-games/${id}/players/${teamLineup.goalkeeperID}`}
+          sx={{ flexGrow: 1, textDecoration: "none", color: "inherit" }}
+        >{`GK - ${
           players.find((player) => player.id === teamLineup.goalkeeperID)
             ?.lastName
         }`}</ListItem>
@@ -140,7 +168,12 @@ const MatchDetailsLineup = ({
       <Typography variant="h6">Defenders:</Typography>
       <List>
         {teamLineup.defenders.map((defender) => (
-          <ListItem key={defender.playerID}>{`${defender.position} - ${
+          <ListItem
+            key={defender.playerID}
+            component={Link}
+            to={`/save-games/${id}/players/${defender.playerID}`}
+            sx={{ flexGrow: 1, textDecoration: "none", color: "inherit" }}
+          >{`${defender.position} - ${
             players.find((player) => player.id === defender.playerID)?.lastName
           }`}</ListItem>
         ))}
@@ -148,7 +181,12 @@ const MatchDetailsLineup = ({
       <Typography variant="h6">Midfielders:</Typography>
       <List>
         {teamLineup.midfielders.map((midfielder) => (
-          <ListItem key={midfielder.playerID}>{`${midfielder.position} - ${
+          <ListItem
+            key={midfielder.playerID}
+            component={Link}
+            to={`/save-games/${id}/players/${midfielder.playerID}`}
+            sx={{ flexGrow: 1, textDecoration: "none", color: "inherit" }}
+          >{`${midfielder.position} - ${
             players.find((player) => player.id === midfielder.playerID)
               ?.lastName
           }`}</ListItem>

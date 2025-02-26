@@ -345,10 +345,20 @@ export const simulateMatchDay = async (saveGameID: number) => {
       }
 
       await matchesDB.update(match.id!, {
-        // ratings: {
-        //   homeTeam: generateRandomTeamRatings(),
-        //   awayTeam: generateRandomTeamRatings(),
-        // },
+        ratings: {
+          homeTeam: {
+            attack: 0,
+            midfield: 0,
+            defense: 0,
+            goalkeeping: 0,
+          },
+          awayTeam: {
+            attack: 0,
+            midfield: 0,
+            defense: 0,
+            goalkeeping: 0,
+          },
+        },
         events: { homeTeam: eventsHome, awayTeam: eventsAway },
         lineups: {
           homeTeam: homeLineup,
