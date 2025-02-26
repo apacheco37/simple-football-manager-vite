@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   Box,
@@ -120,6 +120,10 @@ const MatchDetailsLineup = ({
   teamLineup?: TeamLineup;
   players: Player[];
 }) => {
+  const {
+    saveGame: { id },
+  } = useContext(SaveGameContext);
+
   if (!teamLineup) {
     return <div>Lineup not found</div>;
   }
@@ -153,7 +157,12 @@ const MatchDetailsLineup = ({
       <Typography variant="h6">Strikers:</Typography>
       <List>
         {teamLineup.strikers.map((striker) => (
-          <ListItem key={striker.playerID}>{`${striker.position} - ${
+          <ListItem
+            key={striker.playerID}
+            component={Link}
+            to={`/save-games/${id}/players/${striker.playerID}`}
+            sx={{ flexGrow: 1, textDecoration: "none", color: "inherit" }}
+          >{`${striker.position} - ${
             players.find((player) => player.id === striker.playerID)?.lastName
           }`}</ListItem>
         ))}
