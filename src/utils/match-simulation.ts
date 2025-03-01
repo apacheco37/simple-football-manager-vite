@@ -1,5 +1,3 @@
-import { faker } from "@faker-js/faker";
-
 import {
   getSaveGameDB,
   MatchEvent,
@@ -20,7 +18,7 @@ export const simulateMatchDay = async (saveGameID: number) => {
           .toArray()
       : await matchesDB.where({ seasonID: season.id, day: 1 }).toArray();
 
-    matches.forEach(async (match) => {
+    for (const match of matches) {
       const homeLineup = await teamLineupsDB.get({
         teamID: match.homeTeamID,
       });
@@ -41,37 +39,54 @@ export const simulateMatchDay = async (saveGameID: number) => {
         .where({ teamID: match.awayTeamID })
         .toArray();
 
-      const homeScore = faker.number.int({ min: 0, max: 5 });
-      const awayScore = faker.number.int({ min: 0, max: 5 });
-
       const eventsHome: MatchEvent[] = [];
       const eventsAway: MatchEvent[] = [];
 
-      for (let i = 0; i < homeScore; i++) {
-        const minute = faker.number.int({ min: 1, max: 90 });
-        const event: MatchEvent = {
-          type: "goal",
-          player1ID: homeLineup.strikers[0].playerID,
-          minute,
-        };
-        eventsHome.push(event);
-      }
+      const ratings = {
+        homeTeam: calculateTeamRatings(homeLineup, homePlayers),
+        awayTeam: calculateTeamRatings(awayLineup, awayPlayers),
+      };
 
-      for (let i = 0; i < awayScore; i++) {
-        const minute = faker.number.int({ min: 1, max: 90 });
-        const event: MatchEvent = {
-          type: "goal",
-          player1ID: awayLineup.strikers[0].playerID,
-          minute,
-        };
-        eventsAway.push(event);
+      for (let i = 0; i < 90; i += 9) {
+        // choose team
+        const totalRating =
+          ratings.homeTeam.midfield + ratings.awayTeam.midfield;
+        const possession =
+          Math.random() < ratings.homeTeam.midfield / totalRating
+            ? "home"
+            : "away";
+
+        // check if it is goal
+        const [attackingRating, defendingRating] =
+          possession === "home"
+            ? [ratings.homeTeam.attack, ratings.awayTeam.defense]
+            : [ratings.awayTeam.attack, ratings.homeTeam.defense];
+        const totalAttackDefenseRating = attackingRating + defendingRating;
+        const isGoal =
+          Math.random() < attackingRating / totalAttackDefenseRating
+            ? true
+            : false;
+
+        // add goal
+        if (isGoal) {
+          const goalEvent: MatchEvent = {
+            type: "goal",
+            player1ID: (possession === "home" ? homeLineup : awayLineup)
+              .strikers[
+              Math.floor(
+                Math.random() *
+                  (possession === "home" ? homeLineup : awayLineup).strikers
+                    .length
+              )
+            ].playerID,
+            minute: i + Math.floor(Math.random() * 9),
+          };
+          (possession === "home" ? eventsHome : eventsAway).push(goalEvent);
+        }
       }
 
       await matchesDB.update(match.id!, {
-        ratings: {
-          homeTeam: calculateTeamRatings(homeLineup, homePlayers),
-          awayTeam: calculateTeamRatings(awayLineup, awayPlayers),
-        },
+        ratings,
         events: { homeTeam: eventsHome, awayTeam: eventsAway },
         lineups: {
           homeTeam: homeLineup,
@@ -81,15 +96,15 @@ export const simulateMatchDay = async (saveGameID: number) => {
       await updateStandings(
         saveGameID,
         season.id!,
-        homeScore,
-        awayScore,
+        eventsHome.filter((event) => event.type === "goal").length,
+        eventsAway.filter((event) => event.type === "goal").length,
         match.homeTeamID,
         match.awayTeamID
       );
       await seasonsDB.update(season.id!, {
         lastDayPlayed: season.lastDayPlayed ? season.lastDayPlayed + 1 : 1,
       });
-    });
+    }
   });
 };
 
