@@ -8,6 +8,7 @@ import {
   League,
   Match,
   MatchEvent,
+  MatchTeamRatings,
   Player,
   SaveGame,
   Season,
@@ -294,7 +295,8 @@ const generateRandomTeamName = () => {
 };
 
 export const simulateMatchDay = async (saveGameID: number) => {
-  const { seasonsDB, matchesDB, teamLineupsDB } = getSaveGameDB(saveGameID);
+  const { seasonsDB, matchesDB, teamLineupsDB, playersDB } =
+    getSaveGameDB(saveGameID);
 
   // this sucks, should be improved ffs
   (await seasonsDB.toArray()).forEach(async (season) => {
@@ -317,6 +319,13 @@ export const simulateMatchDay = async (saveGameID: number) => {
       if (!awayLineup) {
         throw new Error("Away lineup not found.");
       }
+
+      const homePlayers = await playersDB
+        .where({ teamID: match.homeTeamID })
+        .toArray();
+      const awayPlayers = await playersDB
+        .where({ teamID: match.awayTeamID })
+        .toArray();
 
       const homeScore = faker.number.int({ min: 0, max: 5 });
       const awayScore = faker.number.int({ min: 0, max: 5 });
@@ -346,18 +355,8 @@ export const simulateMatchDay = async (saveGameID: number) => {
 
       await matchesDB.update(match.id!, {
         ratings: {
-          homeTeam: {
-            attack: 0,
-            midfield: 0,
-            defense: 0,
-            goalkeeping: 0,
-          },
-          awayTeam: {
-            attack: 0,
-            midfield: 0,
-            defense: 0,
-            goalkeeping: 0,
-          },
+          homeTeam: calculateTeamRatings(homeLineup, homePlayers),
+          awayTeam: calculateTeamRatings(awayLineup, awayPlayers),
         },
         events: { homeTeam: eventsHome, awayTeam: eventsAway },
         lineups: {
@@ -378,6 +377,53 @@ export const simulateMatchDay = async (saveGameID: number) => {
       });
     });
   });
+};
+
+const calculateTeamRatings = (lineup: TeamLineup, players: Player[]) => {
+  const [MAX_DEFENDERS, MAX_MIDFIELDERS, MAX_STRIKERS] = [5, 5, 3];
+
+  const [MAX_DEFENSE_RATING, MAX_MIDFIELD_RATING, MAX_ATTACK_RATING] = [
+    100 * MAX_DEFENDERS,
+    100 * MAX_MIDFIELDERS,
+    100 * MAX_STRIKERS,
+  ];
+
+  const ratings: MatchTeamRatings = {
+    attack:
+      (lineup.strikers.reduce(
+        (acc, striker) =>
+          acc +
+          (players.find((player) => player.id === striker.playerID)?.skill ??
+            0),
+        0
+      ) /
+        MAX_ATTACK_RATING) *
+      100,
+    midfield:
+      (lineup.midfielders.reduce(
+        (acc, midfielder) =>
+          acc +
+          (players.find((player) => player.id === midfielder.playerID)?.skill ??
+            0),
+        0
+      ) /
+        MAX_MIDFIELD_RATING) *
+      100,
+    defense:
+      (lineup.defenders.reduce(
+        (acc, defender) =>
+          acc +
+          (players.find((player) => player.id === defender.playerID)?.skill ??
+            0),
+        0
+      ) /
+        MAX_DEFENSE_RATING) *
+      100,
+    goalkeeping:
+      players.find((player) => player.id === lineup.goalkeeperID)?.skill ?? 0,
+  };
+
+  return ratings;
 };
 
 const updateStandings = async (
