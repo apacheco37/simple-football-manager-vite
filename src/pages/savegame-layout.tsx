@@ -13,7 +13,7 @@ import {
   ListItemText,
   Toolbar,
 } from "@mui/material";
-import { simulateMatchDay } from "../utils/utils";
+import { simulateMatchDay } from "../utils/match-simulation";
 
 export const SaveGameContext = createContext<{
   saveGame: SaveGame;

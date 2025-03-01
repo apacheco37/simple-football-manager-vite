@@ -1,0 +1,179 @@
+import { faker } from "@faker-js/faker";
+
+import {
+  getSaveGameDB,
+  MatchEvent,
+  MatchTeamRatings,
+  Player,
+  TeamLineup,
+} from "../db/db";
+
+export const simulateMatchDay = async (saveGameID: number) => {
+  const { seasonsDB, matchesDB, teamLineupsDB, playersDB } =
+    getSaveGameDB(saveGameID);
+
+  // this sucks, should be improved ffs
+  (await seasonsDB.toArray()).forEach(async (season) => {
+    const matches = season.lastDayPlayed
+      ? await matchesDB
+          .where({ seasonID: season.id, day: season.lastDayPlayed + 1 })
+          .toArray()
+      : await matchesDB.where({ seasonID: season.id, day: 1 }).toArray();
+
+    matches.forEach(async (match) => {
+      const homeLineup = await teamLineupsDB.get({
+        teamID: match.homeTeamID,
+      });
+      if (!homeLineup) {
+        throw new Error("Home lineup not found.");
+      }
+      const awayLineup = await teamLineupsDB.get({
+        teamID: match.awayTeamID,
+      });
+      if (!awayLineup) {
+        throw new Error("Away lineup not found.");
+      }
+
+      const homePlayers = await playersDB
+        .where({ teamID: match.homeTeamID })
+        .toArray();
+      const awayPlayers = await playersDB
+        .where({ teamID: match.awayTeamID })
+        .toArray();
+
+      const homeScore = faker.number.int({ min: 0, max: 5 });
+      const awayScore = faker.number.int({ min: 0, max: 5 });
+
+      const eventsHome: MatchEvent[] = [];
+      const eventsAway: MatchEvent[] = [];
+
+      for (let i = 0; i < homeScore; i++) {
+        const minute = faker.number.int({ min: 1, max: 90 });
+        const event: MatchEvent = {
+          type: "goal",
+          player1ID: homeLineup.strikers[0].playerID,
+          minute,
+        };
+        eventsHome.push(event);
+      }
+
+      for (let i = 0; i < awayScore; i++) {
+        const minute = faker.number.int({ min: 1, max: 90 });
+        const event: MatchEvent = {
+          type: "goal",
+          player1ID: awayLineup.strikers[0].playerID,
+          minute,
+        };
+        eventsAway.push(event);
+      }
+
+      await matchesDB.update(match.id!, {
+        ratings: {
+          homeTeam: calculateTeamRatings(homeLineup, homePlayers),
+          awayTeam: calculateTeamRatings(awayLineup, awayPlayers),
+        },
+        events: { homeTeam: eventsHome, awayTeam: eventsAway },
+        lineups: {
+          homeTeam: homeLineup,
+          awayTeam: awayLineup,
+        },
+      });
+      await updateStandings(
+        saveGameID,
+        season.id!,
+        homeScore,
+        awayScore,
+        match.homeTeamID,
+        match.awayTeamID
+      );
+      await seasonsDB.update(season.id!, {
+        lastDayPlayed: season.lastDayPlayed ? season.lastDayPlayed + 1 : 1,
+      });
+    });
+  });
+};
+
+const calculateTeamRatings = (lineup: TeamLineup, players: Player[]) => {
+  const [MAX_DEFENDERS, MAX_MIDFIELDERS, MAX_STRIKERS] = [5, 5, 3];
+
+  const [MAX_DEFENSE_RATING, MAX_MIDFIELD_RATING, MAX_ATTACK_RATING] = [
+    100 * MAX_DEFENDERS,
+    100 * MAX_MIDFIELDERS,
+    100 * MAX_STRIKERS,
+  ];
+
+  const ratings: MatchTeamRatings = {
+    attack:
+      (lineup.strikers.reduce(
+        (acc, striker) =>
+          acc +
+          (players.find((player) => player.id === striker.playerID)?.skill ??
+            0),
+        0
+      ) /
+        MAX_ATTACK_RATING) *
+      100,
+    midfield:
+      (lineup.midfielders.reduce(
+        (acc, midfielder) =>
+          acc +
+          (players.find((player) => player.id === midfielder.playerID)?.skill ??
+            0),
+        0
+      ) /
+        MAX_MIDFIELD_RATING) *
+      100,
+    defense:
+      (lineup.defenders.reduce(
+        (acc, defender) =>
+          acc +
+          (players.find((player) => player.id === defender.playerID)?.skill ??
+            0),
+        0
+      ) /
+        MAX_DEFENSE_RATING) *
+      100,
+    goalkeeping:
+      players.find((player) => player.id === lineup.goalkeeperID)?.skill ?? 0,
+  };
+
+  return ratings;
+};
+
+const updateStandings = async (
+  saveGameID: number,
+  seasonID: number,
+  homeGoals: number,
+  awayGoals: number,
+  homeTeamID: number,
+  awayTeamID: number
+) => {
+  const { standingsDB } = getSaveGameDB(saveGameID);
+  const standings = await standingsDB.get({ seasonID: seasonID });
+
+  if (!standings) {
+    throw new Error("Standings not found.");
+  }
+
+  if (homeGoals > awayGoals) {
+    standings.teams[homeTeamID].points += 3;
+    standings.teams[homeTeamID].wins += 1;
+    standings.teams[awayTeamID].losses += 1;
+  } else if (homeGoals < awayGoals) {
+    standings.teams[awayTeamID].points += 3;
+    standings.teams[awayTeamID].wins += 1;
+    standings.teams[homeTeamID].losses += 1;
+  } else {
+    standings.teams[homeTeamID].points += 1;
+    standings.teams[awayTeamID].points += 1;
+    standings.teams[homeTeamID].draws += 1;
+    standings.teams[awayTeamID].draws += 1;
+  }
+
+  standings.teams[homeTeamID].goalsFor += homeGoals;
+  standings.teams[homeTeamID].goalsAgainst += awayGoals;
+  standings.teams[awayTeamID].goalsFor += awayGoals;
+  standings.teams[awayTeamID].goalsAgainst += homeGoals;
+
+  await standingsDB.put(standings, standings.id);
+};
