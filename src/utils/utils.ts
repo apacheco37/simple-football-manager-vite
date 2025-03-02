@@ -67,6 +67,8 @@ export const createNewGame = async (
 
   for (const seasonID of seasonIDs) {
     const leagueID = (await saveGameDB.seasonsDB.get(seasonID))?.leagueID;
+    await saveGameDB.leaguesDB.update(leagueID!, { currentSeasonID: seasonID });
+
     const seasonTeamsIDs = (
       await saveGameDB.teamsDB.where({ leagueID }).toArray()
     ).map((team) => team.id!);
@@ -208,7 +210,7 @@ const createSeasons = (leagueIDs: number[], teamsPerLeague: number) => {
   return seasons;
 };
 
-const createStandings = (seasonID: number, teamIDs: number[]) => {
+export const createStandings = (seasonID: number, teamIDs: number[]) => {
   const standings: Standings = {
     seasonID,
     teams: {},
@@ -228,7 +230,10 @@ const createStandings = (seasonID: number, teamIDs: number[]) => {
   return standings;
 };
 
-const generateMatchesForSeasons = (teamIDs: number[], seasonID: number) => {
+export const generateMatchesForSeasons = (
+  teamIDs: number[],
+  seasonID: number
+) => {
   const teamsQuantity = teamIDs.length;
 
   if (teamsQuantity % 2 !== 0) {

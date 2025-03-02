@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   Box,
   MenuItem,
@@ -21,6 +21,8 @@ const Standings = () => {
   } = useContext(SaveGameContext);
   const [selectedLeagueID, setSelectedLeagueID] = useState<number | "">("");
   const [selectedSeasonID, setSelectedSeasonID] = useState<number | "">("");
+  const initialLeagueSet = useRef(false);
+  const initialSeasonSet = useRef(false);
 
   const teamNames = useLiveQuery(() => teamsDB.toArray(), [], []).reduce(
     (acc, team) => {
@@ -33,8 +35,9 @@ const Standings = () => {
   const leagues = useLiveQuery(() => leaguesDB.toArray(), [], []);
 
   useEffect(() => {
-    if (leagues.length) {
+    if (!initialLeagueSet.current && leagues.length) {
       setSelectedLeagueID(leagues[0].id!);
+      initialLeagueSet.current = true;
     }
   }, [leagues]);
 
@@ -48,10 +51,12 @@ const Standings = () => {
   );
 
   useEffect(() => {
-    if (seasons.length) {
-      setSelectedSeasonID(seasons[0].id!);
+    if (!initialSeasonSet.current && seasons.length && leagues.length) {
+      const league = leagues.find((league) => league.id === selectedLeagueID);
+      setSelectedSeasonID(league ? league.currentSeasonID! : seasons[0].id!);
+      initialSeasonSet.current = true;
     }
-  }, [seasons]);
+  }, [leagues, seasons, selectedLeagueID]);
 
   const standings = useLiveQuery(
     () =>

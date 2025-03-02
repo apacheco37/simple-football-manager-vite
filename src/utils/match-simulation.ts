@@ -5,13 +5,26 @@ import {
   Player,
   TeamLineup,
 } from "../db/db";
+import { createStandings, generateMatchesForSeasons } from "./utils";
 
 export const simulateMatchDay = async (saveGameID: number) => {
-  const { seasonsDB, matchesDB, teamLineupsDB, playersDB } =
-    getSaveGameDB(saveGameID);
+  const {
+    seasonsDB,
+    matchesDB,
+    teamLineupsDB,
+    playersDB,
+    standingsDB,
+    teamsDB,
+    leaguesDB,
+  } = getSaveGameDB(saveGameID);
+
+  const currentSeasonIDs = (await leaguesDB.toArray())
+    .map((league) => league.currentSeasonID)
+    .filter((item) => item !== undefined);
+  const seasons = await seasonsDB.where("id").anyOf(currentSeasonIDs).toArray();
 
   // this sucks, should be improved ffs
-  (await seasonsDB.toArray()).forEach(async (season) => {
+  seasons.forEach(async (season) => {
     const matches = season.lastDayPlayed
       ? await matchesDB
           .where({ seasonID: season.id, day: season.lastDayPlayed + 1 })
@@ -103,6 +116,33 @@ export const simulateMatchDay = async (saveGameID: number) => {
       );
       await seasonsDB.update(season.id!, {
         lastDayPlayed: season.lastDayPlayed ? season.lastDayPlayed + 1 : 1,
+      });
+    }
+
+    if ((season.lastDayPlayed ?? 0 + 1) === season.days) {
+      const seasonTeamsIDs = (
+        await teamsDB.where({ leagueID: season.leagueID }).toArray()
+      ).map((team) => team.id!);
+
+      if (!seasonTeamsIDs.length) {
+        throw new Error("No teams found for the season.");
+      }
+
+      const newSeasonID = Number(
+        await seasonsDB.add({
+          leagueID: season.leagueID,
+          year: season.year + 1,
+          days: season.days,
+        })
+      );
+      const standings = createStandings(newSeasonID, seasonTeamsIDs);
+      await standingsDB.add(standings);
+
+      const matches = generateMatchesForSeasons(seasonTeamsIDs, newSeasonID);
+      await matchesDB.bulkAdd(matches);
+
+      await leaguesDB.update(season.leagueID, {
+        currentSeasonID: newSeasonID,
       });
     }
   });

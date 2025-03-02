@@ -89,6 +89,7 @@ export interface Standings {
 export interface League {
   id?: number;
   name: string;
+  currentSeasonID?: number;
 }
 
 export const ALL_POSITIONS = [
