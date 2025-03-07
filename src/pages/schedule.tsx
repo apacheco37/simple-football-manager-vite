@@ -1,22 +1,9 @@
-import {
-  Box,
-  Button,
-  List,
-  MenuItem,
-  Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-} from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import { Box, List, MenuItem, Select, Stack, Typography } from "@mui/material";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 
 import { SaveGameContext } from "./savegame-layout";
+import Table from "../components/table";
 
 const Schedule = () => {
   const {
@@ -139,21 +126,14 @@ const Schedule = () => {
             Select a match day to see matches.
           </Typography>
         )}
-        {selectedMatchDay && selectedMatchDay && (
-          <Box key={selectedMatchDay} sx={{ marginTop: 2 }}>
+        {selectedMatchDay && (
+          <Stack key={selectedMatchDay} sx={{ marginTop: 2 }} spacing={2}>
             <Typography variant="h6">Day {selectedMatchDay}</Typography>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Home</TableCell>
-                  <TableCell>Away</TableCell>
-                  <TableCell>See Details</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {matches.map((match) => (
-                  <TableRow key={match.id}>
-                    <TableCell
+            <Table
+              columns={[
+                {
+                  render: (match) => (
+                    <Typography
                       sx={humanTeamCellStyle(
                         match.homeTeamID,
                         match.awayTeamID
@@ -161,8 +141,13 @@ const Schedule = () => {
                     >
                       {teamNames[match.homeTeamID]}{" "}
                       {match.events?.homeTeam?.length}
-                    </TableCell>
-                    <TableCell
+                    </Typography>
+                  ),
+                  label: "Home",
+                },
+                {
+                  render: (match) => (
+                    <Typography
                       sx={humanTeamCellStyle(
                         match.homeTeamID,
                         match.awayTeamID
@@ -170,21 +155,15 @@ const Schedule = () => {
                     >
                       {teamNames[match.awayTeamID]}{" "}
                       {match.events?.awayTeam?.length}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        component={Link}
-                        to={`/save-games/${id}/matches/${match.id}`}
-                        sx={{ minWidth: 0 }}
-                      >
-                        <VisibilityIcon />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Box>
+                    </Typography>
+                  ),
+                  label: "Away",
+                },
+              ]}
+              rows={matches}
+              basePath={`/save-games/${id}/matches`}
+            />
+          </Stack>
         )}
       </List>
     </Box>

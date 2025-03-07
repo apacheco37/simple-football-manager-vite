@@ -1,20 +1,11 @@
 import { useContext } from "react";
-import { Link, useParams } from "react-router-dom";
-import {
-  Paper,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-} from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import { useParams } from "react-router-dom";
+import { Stack, Typography } from "@mui/material";
 
 import { SaveGameContext } from "./savegame-layout";
 import { useLiveQuery } from "dexie-react-hooks";
+import Table, { Column } from "../components/table";
+import { Player } from "../db/db";
 
 const Players = () => {
   const {
@@ -23,7 +14,7 @@ const Players = () => {
   } = useContext(SaveGameContext);
   const { teamid } = useParams();
 
-  const teamPlayers = useLiveQuery(
+  const teamPlayers = useLiveQuery<Player[], Player[]>(
     () => playersDB.where({ teamID: Number(teamid) }).toArray(),
     [teamid],
     []
@@ -31,50 +22,22 @@ const Players = () => {
 
   const team = useLiveQuery(() => teamsDB.get(Number(teamid)), [teamid]);
 
-  const columns = [
-    "First Name",
-    "Last Name",
-    "Age",
-    "Skill",
-    "Position",
-    "See Details",
+  const columns: Column<Player>[] = [
+    { key: "firstName", label: "First Name" },
+    { key: "lastName", label: "Last Name" },
+    { key: "age", label: "Age" },
+    { key: "skill", label: "Skill" },
+    { key: "position", label: "Position" },
   ];
 
   return (
     <Stack spacing={2}>
       <Typography variant="h4">{team?.name} Players</Typography>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              {columns.map((column) => (
-                <TableCell key={column}>{column}</TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {teamPlayers?.map((player) => (
-              <TableRow
-                key={player.id}
-                // sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {player.firstName}
-                </TableCell>
-                <TableCell>{player.lastName}</TableCell>
-                <TableCell>{player.age}</TableCell>
-                <TableCell>{player.skill}</TableCell>
-                <TableCell>{player.position}</TableCell>
-                <TableCell>
-                  <Link to={`/save-games/${id}/players/${player.id}`}>
-                    <VisibilityIcon />
-                  </Link>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Table
+        columns={columns}
+        rows={teamPlayers}
+        basePath={`/save-games/${id}/players`}
+      />
     </Stack>
   );
 };

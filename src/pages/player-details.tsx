@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { useParams } from "react-router-dom";
 
 import { SaveGameContext } from "./savegame-layout";
-import { Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { useLiveQuery } from "dexie-react-hooks";
 
 const PlayerDetails = () => {
@@ -18,11 +18,11 @@ const PlayerDetails = () => {
   }
 
   return (
-    <div>
+    <Stack spacing={2}>
       <Typography variant="h4">{`${player.firstName} ${player.lastName}`}</Typography>
       <Typography>{`${player.position}, ${player.age} years old `}</Typography>
       <Typography>{`Skill: ${player.skill}`}</Typography>
-    </div>
+    </Stack>
   );
 };
 

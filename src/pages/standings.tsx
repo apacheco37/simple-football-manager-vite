@@ -1,18 +1,9 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useContext, useEffect, useRef, useState } from "react";
-import {
-  Box,
-  MenuItem,
-  Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-} from "@mui/material";
+import { Box, MenuItem, Select, Stack, Typography } from "@mui/material";
 
 import { SaveGameContext } from "./savegame-layout";
+import Table from "../components/table";
 
 const Standings = () => {
   const {
@@ -70,7 +61,7 @@ const Standings = () => {
     Number(teamID) === humanTeamID ? { fontWeight: "bold" } : {};
 
   return (
-    <Box>
+    <Stack spacing={2}>
       <Box flexDirection={"row"} display="flex" gap={2} alignItems={"center"}>
         <Typography variant="body1">League:</Typography>
         <Select
@@ -103,64 +94,37 @@ const Standings = () => {
           ))}
         </Select>
       </Box>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Position</TableCell>
-            <TableCell>Team</TableCell>
-            {/* <TableCell>Played</TableCell> */}
-            <TableCell>Won</TableCell>
-            <TableCell>Drawn</TableCell>
-            <TableCell>Lost</TableCell>
-            <TableCell>Goals For</TableCell>
-            <TableCell>Goals Against</TableCell>
-            <TableCell>Goal Difference</TableCell>
-            <TableCell>Points</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {standings &&
-            Object.entries(standings.teams)
-              .sort((a, b) =>
-                b[1].points !== a[1].points
-                  ? b[1].points - a[1].points
-                  : b[1].goalsFor -
-                    b[1].goalsAgainst -
-                    (a[1].goalsFor - a[1].goalsAgainst)
-              )
-              .map(([teamID, teamStats], index) => (
-                <TableRow key={teamID}>
-                  <TableCell sx={humanTeamCellStyle(teamID)}>
-                    {index + 1}
-                  </TableCell>
-                  <TableCell sx={humanTeamCellStyle(teamID)}>
-                    {teamNames[Number(teamID)]}
-                  </TableCell>
-                  {/* <TableCell sx={{ fontWeight: isHumanTeam(teamID) ? "bold" : undefined }}>{standing[1].played}</TableCell> */}
-                  <TableCell sx={humanTeamCellStyle(teamID)}>
-                    {teamStats.wins}
-                  </TableCell>
-                  <TableCell sx={humanTeamCellStyle(teamID)}>
-                    {teamStats.draws}
-                  </TableCell>
-                  <TableCell sx={humanTeamCellStyle(teamID)}>
-                    {teamStats.losses}
-                  </TableCell>
-                  <TableCell sx={humanTeamCellStyle(teamID)}>
-                    {teamStats.goalsFor}
-                  </TableCell>
-                  <TableCell sx={humanTeamCellStyle(teamID)}>
-                    {teamStats.goalsAgainst}
-                  </TableCell>
-                  <TableCell sx={humanTeamCellStyle(teamID)}>
-                    {teamStats.goalsFor - teamStats.goalsAgainst}
-                  </TableCell>
-                  <TableCell>{teamStats.points}</TableCell>
-                </TableRow>
-              ))}
-        </TableBody>
-      </Table>
-    </Box>
+      <Table
+        columns={[
+          { render: (_, index) => index + 1, label: "Position" },
+          { render: ({ id }) => teamNames[Number(id)], label: "Team" },
+          {
+            render: ({ wins, draws, losses }) => wins + draws + losses,
+            label: "Played",
+          },
+          { key: "wins", label: "Won" },
+          { key: "draws", label: "Drawn" },
+          { key: "losses", label: "Lost" },
+          { key: "goalsFor", label: "Goals For" },
+          { key: "goalsAgainst", label: "Goals Against" },
+          {
+            render: (teamStats) => teamStats.goalsFor - teamStats.goalsAgainst,
+            label: "Goal Difference",
+          },
+          { key: "points", label: "Points" },
+        ]}
+        cellStyle={(teamStats) => humanTeamCellStyle(teamStats.id)}
+        rows={Object.entries(standings?.teams ?? [])
+          .sort((a, b) =>
+            b[1].points !== a[1].points
+              ? b[1].points - a[1].points
+              : b[1].goalsFor -
+                b[1].goalsAgainst -
+                (a[1].goalsFor - a[1].goalsAgainst)
+          )
+          .map(([teamID, teamStats]) => ({ id: teamID, ...teamStats }))}
+      />
+    </Stack>
   );
 };
 
