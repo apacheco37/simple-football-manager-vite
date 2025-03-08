@@ -5,7 +5,7 @@ import {
   Player,
   TeamLineup,
 } from "../db/db";
-import { createStandings, generateMatchesForSeasons } from "./utils";
+import { createStandings, generateMatchesForSeasons } from "./data-creation";
 
 export const simulateMatchDay = async (saveGameID: number) => {
   const {

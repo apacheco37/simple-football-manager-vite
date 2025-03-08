@@ -17,7 +17,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { getSaveGamesDB } from "../db/db";
-import { createNewGame } from "../utils/utils";
+import { createNewGame } from "../utils/data-creation";
 import Dexie from "dexie";
 
 const SaveGames = () => {
