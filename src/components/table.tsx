@@ -7,14 +7,27 @@ import {
   TableBody,
   Table as MaterialTable,
   Button,
+  TableSortLabel,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Link } from "react-router-dom";
 import React from "react";
 
 export type Column<T> =
-  | { key: keyof T; label: string }
-  | { render: (row: T, rowIndex: number) => React.ReactNode; label: string };
+  | {
+      key: keyof T;
+      label: string;
+      sortable?: boolean;
+      sorter?: (a: T, b: T, order: Order) => number;
+    }
+  | {
+      render: (row: T, rowIndex: number) => React.ReactNode;
+      label: string;
+      sortable?: boolean;
+      sorter?: (a: T, b: T, order: Order) => number;
+    };
+
+export type Order = "asc" | "desc" | undefined;
 
 const Table = <T extends { id?: number | string }>({
   columns,
@@ -27,19 +40,58 @@ const Table = <T extends { id?: number | string }>({
   basePath?: string;
   cellStyle?: (row: T) => React.CSSProperties;
 }) => {
+  const [order, setOrder] = React.useState<Order>();
+  const [orderBy, setOrderBy] = React.useState<number | undefined>();
+
+  const handleSort = (columnIndex: number) => {
+    setOrderBy(columnIndex);
+    switch (order) {
+      case "asc":
+        setOrder("desc");
+        break;
+      case "desc":
+        setOrder(undefined);
+        break;
+      default:
+        setOrder("asc");
+    }
+  };
+
+  const orderedRows = React.useMemo(() => {
+    if (orderBy === undefined) {
+      return rows;
+    }
+    const sorter = columns[orderBy].sorter;
+    if (!sorter) {
+      return rows;
+    }
+    return rows.slice().sort((a, b) => sorter(a, b, order));
+  }, [columns, order, orderBy, rows]);
+
   return (
     <TableContainer component={Paper}>
       <MaterialTable size="small" sx={{ minWidth: 650 }}>
         <TableHead>
           <TableRow>
-            {columns.map(({ label }) => (
-              <TableCell key={label}>{label}</TableCell>
+            {columns.map(({ label, sortable }, columnIndex) => (
+              <TableCell
+                key={label}
+                sortDirection={orderBy === columnIndex ? order : false}
+              >
+                <TableSortLabel
+                  active={orderBy === columnIndex && order !== undefined}
+                  direction={orderBy === columnIndex ? order : "asc"}
+                  onClick={sortable ? () => handleSort(columnIndex) : undefined}
+                >
+                  {label}
+                </TableSortLabel>
+              </TableCell>
             ))}
             {basePath && <TableCell key={"details"}>{"See Details"}</TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row, rowIndex) => (
+          {orderedRows.map((row, rowIndex) => (
             <TableRow
               key={row.id}
               sx={{
