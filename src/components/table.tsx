@@ -78,13 +78,19 @@ const Table = <T extends { id?: number | string }>({
                 key={label}
                 sortDirection={orderBy === columnIndex ? order : false}
               >
-                <TableSortLabel
-                  active={orderBy === columnIndex && order !== undefined}
-                  direction={orderBy === columnIndex ? order : "asc"}
-                  onClick={sortable ? () => handleSort(columnIndex) : undefined}
-                >
-                  {label}
-                </TableSortLabel>
+                {sortable ? (
+                  <TableSortLabel
+                    active={orderBy === columnIndex && order !== undefined}
+                    direction={orderBy === columnIndex ? order : "asc"}
+                    onClick={
+                      sortable ? () => handleSort(columnIndex) : undefined
+                    }
+                  >
+                    {label}
+                  </TableSortLabel>
+                ) : (
+                  label
+                )}
               </TableCell>
             ))}
             {basePath && <TableCell key={"details"}>{"See Details"}</TableCell>}

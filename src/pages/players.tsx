@@ -6,7 +6,7 @@ import { SaveGameContext } from "./savegame-layout";
 import { useLiveQuery } from "dexie-react-hooks";
 import Table, { Column } from "../components/table";
 import { Player } from "../db/db";
-import { stringSorter } from "../utils/sorting";
+import { numberSorter, stringSorter } from "../utils/sorting";
 
 const Players = () => {
   const {
@@ -30,10 +30,30 @@ const Players = () => {
       sortable: true,
       sorter: (a, b, sorter) => stringSorter(a.firstName, b.firstName, sorter),
     },
-    { key: "lastName", label: "Last Name" },
-    { key: "age", label: "Age" },
-    { key: "skill", label: "Skill" },
-    { key: "position", label: "Position" },
+    {
+      key: "lastName",
+      label: "Last Name",
+      sortable: true,
+      sorter: (a, b, sorter) => stringSorter(a.lastName, b.lastName, sorter),
+    },
+    {
+      key: "age",
+      label: "Age",
+      sortable: true,
+      sorter: (a, b, sorter) => numberSorter(a.age, b.age, sorter),
+    },
+    {
+      key: "skill",
+      label: "Skill",
+      sortable: true,
+      sorter: (a, b, sorter) => numberSorter(a.skill, b.skill, sorter),
+    },
+    {
+      key: "position",
+      label: "Position",
+      sortable: true,
+      sorter: (a, b, sorter) => stringSorter(a.position, b.position, sorter),
+    },
   ];
 
   return (
