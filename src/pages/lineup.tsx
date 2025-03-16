@@ -16,6 +16,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ALL_FORMATIONS, Formation, Player, Position } from "../db/db";
 import { SaveGameContext } from "./savegame-layout";
 import { calculatePlayerSkillInPosition } from "../utils/positions";
+import { calculateTeamRatings } from "../utils/match-simulation";
 
 const Lineup = () => {
   const {
@@ -81,6 +82,41 @@ const Lineup = () => {
     }
     return players;
   }, [goalkeeperID, defendersIDs, midfieldersIDs, strikersIDs]);
+
+  // TODO: this calculation is probably wrong, test
+  const teamRatingsPrediction = useMemo(
+    () =>
+      calculateTeamRatings(
+        {
+          teamID: humanTeamID!,
+          goalkeeperID: goalkeeperID[0],
+          defenders: defendersIDs.map((id, index) => ({
+            position: selectedFormation.defenders[index],
+            playerID: id,
+          })),
+          midfielders: midfieldersIDs.map((id, index) => ({
+            position: selectedFormation.midfielders[index],
+            playerID: id,
+          })),
+          strikers: strikersIDs.map((id, index) => ({
+            position: selectedFormation.strikers[index],
+            playerID: id,
+          })),
+        },
+        teamPlayers ?? []
+      ),
+    [
+      humanTeamID,
+      goalkeeperID,
+      defendersIDs,
+      midfieldersIDs,
+      strikersIDs,
+      teamPlayers,
+      selectedFormation.defenders,
+      selectedFormation.midfielders,
+      selectedFormation.strikers,
+    ]
+  );
 
   const handleSave = () => {
     if (
@@ -194,6 +230,15 @@ const Lineup = () => {
         playerIDsInLine={strikersIDs}
         onChange={setStrikersIDs}
       />
+      <Stack direction={"column"}>
+        <Typography>Team Ratings Prediction:</Typography>
+        <Typography>
+          Goalkeeping: {teamRatingsPrediction.goalkeeping}
+        </Typography>
+        <Typography>Defense: {teamRatingsPrediction.defense}</Typography>
+        <Typography>Midfield: {teamRatingsPrediction.midfield}</Typography>
+        <Typography>Attack: {teamRatingsPrediction.attack}</Typography>
+      </Stack>
     </Stack>
   );
 };
