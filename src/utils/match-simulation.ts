@@ -148,7 +148,7 @@ export const simulateMatchDay = async (saveGameID: number) => {
   });
 };
 
-const calculateTeamRatings = (lineup: TeamLineup, players: Player[]) => {
+export const calculateTeamRatings = (lineup: TeamLineup, players: Player[]) => {
   const [MAX_DEFENDERS, MAX_MIDFIELDERS, MAX_STRIKERS] = [5, 5, 3];
 
   const [MAX_DEFENSE_RATING, MAX_MIDFIELD_RATING, MAX_ATTACK_RATING] = [
@@ -158,36 +158,45 @@ const calculateTeamRatings = (lineup: TeamLineup, players: Player[]) => {
   ];
 
   const ratings: MatchTeamRatings = {
-    attack:
-      (lineup.strikers.reduce(
-        (acc, striker) =>
-          acc +
-          (players.find((player) => player.id === striker.playerID)?.skill ??
-            0),
-        0
-      ) /
-        MAX_ATTACK_RATING) *
-      100,
-    midfield:
-      (lineup.midfielders.reduce(
-        (acc, midfielder) =>
-          acc +
-          (players.find((player) => player.id === midfielder.playerID)?.skill ??
-            0),
-        0
-      ) /
-        MAX_MIDFIELD_RATING) *
-      100,
-    defense:
-      (lineup.defenders.reduce(
-        (acc, defender) =>
-          acc +
-          (players.find((player) => player.id === defender.playerID)?.skill ??
-            0),
-        0
-      ) /
-        MAX_DEFENSE_RATING) *
-      100,
+    attack: parseFloat(
+      (
+        (lineup.strikers.reduce(
+          (acc, striker) =>
+            acc +
+            (players.find((player) => player.id === striker.playerID)?.skill ??
+              0),
+          0
+        ) /
+          MAX_ATTACK_RATING) *
+        100
+      ).toFixed(1)
+    ),
+    midfield: parseFloat(
+      (
+        (lineup.midfielders.reduce(
+          (acc, midfielder) =>
+            acc +
+            (players.find((player) => player.id === midfielder.playerID)
+              ?.skill ?? 0),
+          0
+        ) /
+          MAX_MIDFIELD_RATING) *
+        100
+      ).toFixed(1)
+    ),
+    defense: parseFloat(
+      (
+        (lineup.defenders.reduce(
+          (acc, defender) =>
+            acc +
+            (players.find((player) => player.id === defender.playerID)?.skill ??
+              0),
+          0
+        ) /
+          MAX_DEFENSE_RATING) *
+        100
+      ).toFixed(1)
+    ),
     goalkeeping:
       players.find((player) => player.id === lineup.goalkeeperID)?.skill ?? 0,
   };
