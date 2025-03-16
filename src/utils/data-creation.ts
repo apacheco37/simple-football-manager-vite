@@ -2,12 +2,12 @@ import { faker } from "@faker-js/faker";
 
 import {
   ALL_FORMATIONS,
-  ALL_POSITIONS,
   getSaveGameDB,
   getSaveGamesDB,
   League,
   Match,
   Player,
+  Position,
   SaveGame,
   Season,
   Standings,
@@ -48,8 +48,31 @@ export const createNewGame = async (
     await saveGamesDB.update(saveGameID, { humanTeamID: teamIDs[0] });
   }
 
+  const playerPositions: Position[] = [
+    "GK",
+    "GK",
+    "DF-L",
+    "DF-L",
+    "DF-C",
+    "DF-C",
+    "DF-C",
+    "DF-C",
+    "DF-R",
+    "DF-R",
+    "MF-L",
+    "MF-C",
+    "MF-C",
+    "MF-C",
+    "MF-R",
+    "ST-L",
+    "ST-C",
+    "ST-C",
+    "ST-C",
+    "ST-R",
+  ];
+
   const playerIDs = await saveGameDB.playersDB.bulkAdd(
-    createPlayers(20, teamIDs),
+    createPlayers(playerPositions, teamIDs),
     { allKeys: true }
   );
   const players = await saveGameDB.playersDB.bulkGet(playerIDs);
@@ -152,11 +175,11 @@ const createTeams = (
   return teams;
 };
 
-const createPlayers = (playersQuantity: number, teamIDs: number[]) => {
+const createPlayers = (positions: Position[], teamIDs: number[]) => {
   const players: Player[] = [];
 
   teamIDs.forEach((teamID) => {
-    players.push(...generateRandomPlayers(playersQuantity, teamID));
+    players.push(...generateRandomPlayers(positions, teamID));
   });
 
   return players;
@@ -276,16 +299,16 @@ export const generateMatchesForSeasons = (
   return matches;
 };
 
-const generateRandomPlayers = (quantity: number, teamID: number) => {
+const generateRandomPlayers = (positions: Position[], teamID: number) => {
   const players: Player[] = [];
 
-  for (let i = 0; i < quantity; i++) {
+  for (let i = 0; i < positions.length; i++) {
     players.push({
       firstName: faker.person.firstName("male"),
       lastName: faker.person.lastName("male"),
-      age: faker.number.int({ min: 18, max: 36 }),
-      skill: faker.number.int({ min: 0, max: 100 }),
-      position: ALL_POSITIONS[faker.number.int(ALL_POSITIONS.length - 1)],
+      age: randomNormal(18, 36, 25, 5),
+      skill: randomNormal(),
+      position: positions[i],
       teamID,
     });
   }
@@ -295,4 +318,13 @@ const generateRandomPlayers = (quantity: number, teamID: number) => {
 
 const generateRandomTeamName = () => {
   return `${faker.location.city()} ${faker.animal.dog()}s`;
+};
+
+const randomNormal = (min = 0, max = 100, mean = 50, stdDev = 13) => {
+  const u = 1 - Math.random();
+  const v = 1 - Math.random();
+  const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  const result = Math.round(mean + stdDev * z);
+
+  return Math.min(max, Math.max(min, result)); // Clamp to [min, max]
 };
