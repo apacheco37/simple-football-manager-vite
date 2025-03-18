@@ -4,6 +4,7 @@ import { Box, MenuItem, Select, Stack, Typography } from "@mui/material";
 
 import { SaveGameContext } from "./savegame-layout";
 import Table from "../components/table";
+import TypographyLink from "../components/typography-link";
 
 const Standings = () => {
   const {
@@ -97,7 +98,15 @@ const Standings = () => {
       <Table
         columns={[
           { render: (_, index) => index + 1, label: "Position" },
-          { render: ({ id }) => teamNames[Number(id)], label: "Team" },
+          {
+            render: ({ id }) => (
+              <TypographyLink
+                text={teamNames[Number(id)]}
+                link={`teams/${id}/players`}
+              />
+            ),
+            label: "Team",
+          },
           {
             render: ({ wins, draws, losses }) => wins + draws + losses,
             label: "Played",
