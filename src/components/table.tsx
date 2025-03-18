@@ -8,6 +8,8 @@ import {
   Table as MaterialTable,
   Button,
   TableSortLabel,
+  styled,
+  useTheme,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Link } from "react-router-dom";
@@ -43,6 +45,8 @@ const Table = <T extends { id?: number | string }>({
   const [order, setOrder] = React.useState<Order>();
   const [orderBy, setOrderBy] = React.useState<number | undefined>();
 
+  const theme = useTheme();
+
   const handleSort = (columnIndex: number) => {
     setOrderBy(columnIndex);
     switch (order) {
@@ -72,7 +76,7 @@ const Table = <T extends { id?: number | string }>({
     <TableContainer component={Paper}>
       <MaterialTable size="small" sx={{ minWidth: 650 }}>
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ backgroundColor: theme.palette.common.black }}>
             {columns.map(({ label, sortable }, columnIndex) => (
               <TableCell
                 key={label}
@@ -98,7 +102,7 @@ const Table = <T extends { id?: number | string }>({
         </TableHead>
         <TableBody>
           {orderedRows.map((row, rowIndex) => (
-            <TableRow
+            <StyledTableRow
               key={row.id}
               sx={{
                 "&:last-child td, &:last-child th": { border: 0 },
@@ -130,12 +134,22 @@ const Table = <T extends { id?: number | string }>({
                   </Button>
                 </TableCell>
               )}
-            </TableRow>
+            </StyledTableRow>
           ))}
         </TableBody>
       </MaterialTable>
     </TableContainer>
   );
 };
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.action.hover,
+  },
+  // hide last border
+  "&:last-child td, &:last-child th": {
+    border: 0,
+  },
+}));
 
 export default Table;
