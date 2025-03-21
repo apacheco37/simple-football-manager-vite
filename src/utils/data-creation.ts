@@ -37,15 +37,13 @@ export const createNewGame = async (
 
   const teamsPerLeague = 16;
 
-  const teamIDs = (await saveGameDB.teamsDB.bulkAdd(
-    createTeams(leagueIDs, teamsPerLeague, randomizeTeams),
-    {
-      allKeys: true,
-    }
-  )) as number[];
+  await saveGameDB.teamsDB.bulkAdd(
+    createTeams(leagueIDs, teamsPerLeague, randomizeTeams)
+  );
+  const teams = await saveGameDB.teamsDB.toArray();
 
   if (!spectatorMode) {
-    await saveGamesDB.update(saveGameID, { humanTeamID: teamIDs[0] });
+    await saveGamesDB.update(saveGameID, { humanTeamID: teams[0].id });
   }
 
   const playerPositions: Position[] = [
@@ -72,13 +70,16 @@ export const createNewGame = async (
   ];
 
   const playerIDs = await saveGameDB.playersDB.bulkAdd(
-    createPlayers(playerPositions, teamIDs),
+    createPlayers(
+      playerPositions,
+      teams.map(({ id, countryCode }) => ({ id: id!, countryCode }))
+    ),
     { allKeys: true }
   );
   const players = await saveGameDB.playersDB.bulkGet(playerIDs);
   await saveGameDB.teamLineupsDB.bulkAdd(
     createLineups(
-      teamIDs,
+      teams.map((team) => team.id!),
       players.filter((player) => player !== undefined)
     )
   );
@@ -162,24 +163,52 @@ const createTeams = (
         teams.push({
           name: generateRandomTeamName(),
           leagueID,
+          countryCode: faker.location.countryCode(), // TODO: check if it makes sense
         });
       }
     });
   } else {
-    teams.push(...teamNames.americas.map((name) => ({ name, leagueID: 0 })));
-    teams.push(...teamNames.europe.map((name) => ({ name, leagueID: 1 })));
-    teams.push(...teamNames.asia.map((name) => ({ name, leagueID: 2 })));
-    teams.push(...teamNames.africa.map((name) => ({ name, leagueID: 3 })));
+    teams.push(
+      ...teamNames.americas.map(({ name, countryCode }) => ({
+        name,
+        leagueID: 0,
+        countryCode,
+      }))
+    );
+    teams.push(
+      ...teamNames.europe.map(({ name, countryCode }) => ({
+        name,
+        leagueID: 1,
+        countryCode,
+      }))
+    );
+    teams.push(
+      ...teamNames.asia.map(({ name, countryCode }) => ({
+        name,
+        leagueID: 2,
+        countryCode,
+      }))
+    );
+    teams.push(
+      ...teamNames.africa.map(({ name, countryCode }) => ({
+        name,
+        leagueID: 3,
+        countryCode,
+      }))
+    );
   }
 
   return teams;
 };
 
-const createPlayers = (positions: Position[], teamIDs: number[]) => {
+const createPlayers = (
+  positions: Position[],
+  teams: { id: number; countryCode: string }[]
+) => {
   const players: Player[] = [];
 
-  teamIDs.forEach((teamID) => {
-    players.push(...generateRandomPlayers(positions, teamID));
+  teams.forEach(({ id, countryCode }) => {
+    players.push(...generateRandomPlayers(positions, id, countryCode));
   });
 
   return players;
@@ -299,7 +328,11 @@ export const generateMatchesForSeasons = (
   return matches;
 };
 
-const generateRandomPlayers = (positions: Position[], teamID: number) => {
+const generateRandomPlayers = (
+  positions: Position[],
+  teamID: number,
+  teamCountryCode: string
+) => {
   const players: Player[] = [];
 
   for (let i = 0; i < positions.length; i++) {
@@ -310,6 +343,7 @@ const generateRandomPlayers = (positions: Position[], teamID: number) => {
       skill: randomNormal(),
       position: positions[i],
       teamID,
+      nationalityCode: teamCountryCode,
     });
   }
 

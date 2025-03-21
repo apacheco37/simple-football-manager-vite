@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { useLiveQuery } from "dexie-react-hooks";
 import TypographyLink from "../components/typography-link";
+import CountryFlag from "../components/country-flag";
 
 const PlayerDetails = () => {
   const { playerid } = useParams();
@@ -33,7 +34,10 @@ const PlayerDetails = () => {
 
   return (
     <Stack spacing={2}>
-      <Typography variant="h4">{`${player.firstName} ${player.lastName}`}</Typography>
+      <Stack direction="row" spacing={2}>
+        <CountryFlag countryCode={player.nationalityCode} />
+        <Typography variant="h4">{`${player.firstName} ${player.lastName}`}</Typography>
+      </Stack>
       <TableContainer component={Paper} sx={{ width: "30%" }}>
         <Table>
           <TableBody>

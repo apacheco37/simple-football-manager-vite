@@ -6,6 +6,8 @@ import App from "./App.tsx";
 import "./index.css";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 
+import "/node_modules/flag-icons/css/flag-icons.min.css";
+
 const theme = createTheme({
   palette: {
     mode: "dark",

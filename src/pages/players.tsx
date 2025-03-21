@@ -7,6 +7,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import Table, { Column } from "../components/table";
 import { Player } from "../db/db";
 import { numberSorter, stringSorter } from "../utils/sorting";
+import CountryFlag from "../components/country-flag";
 
 const Players = () => {
   const {
@@ -24,6 +25,12 @@ const Players = () => {
   const team = useLiveQuery(() => teamsDB.get(Number(teamid)), [teamid]);
 
   const columns: Column<Player>[] = [
+    {
+      render: (row, _rowIndex) => (
+        <CountryFlag countryCode={row.nationalityCode} />
+      ),
+      label: "",
+    },
     {
       key: "firstName",
       label: "First Name",

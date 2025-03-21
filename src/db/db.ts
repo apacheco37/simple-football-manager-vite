@@ -11,6 +11,7 @@ export interface Team {
   id?: number;
   name: string;
   leagueID: number;
+  countryCode: string;
 }
 
 export interface Player {
@@ -21,6 +22,7 @@ export interface Player {
   skill: number;
   position: Position;
   teamID: number | null;
+  nationalityCode: string;
 }
 
 export interface MatchEvent {
