@@ -8,6 +8,7 @@ import Table, { Column } from "../components/table";
 import { Player } from "../db/db";
 import { numberSorter, stringSorter } from "../utils/sorting";
 import CountryFlag from "../components/country-flag";
+import PositionChip from "../components/position-chip";
 
 const Players = () => {
   const {
@@ -26,9 +27,7 @@ const Players = () => {
 
   const columns: Column<Player>[] = [
     {
-      render: (row, _rowIndex) => (
-        <CountryFlag countryCode={row.nationalityCode} />
-      ),
+      render: (row) => <CountryFlag countryCode={row.nationalityCode} />,
       label: "",
     },
     {
@@ -56,7 +55,7 @@ const Players = () => {
       sorter: (a, b, sorter) => numberSorter(a.skill, b.skill, sorter),
     },
     {
-      key: "position",
+      render: (row) => <PositionChip position={row.position} />,
       label: "Position",
       sortable: true,
       sorter: (a, b, sorter) => stringSorter(a.position, b.position, sorter),

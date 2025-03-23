@@ -15,6 +15,7 @@ import {
 import { useLiveQuery } from "dexie-react-hooks";
 import TypographyLink from "../components/typography-link";
 import CountryFlag from "../components/country-flag";
+import PositionChip from "../components/position-chip";
 
 const PlayerDetails = () => {
   const { playerid } = useParams();
@@ -52,7 +53,9 @@ const PlayerDetails = () => {
             </TableRow>
             <TableRow>
               <TableCell sx={{ fontWeight: "bold" }}>Position</TableCell>
-              <TableCell>{player.position}</TableCell>
+              <TableCell>
+                {<PositionChip position={player.position} />}
+              </TableCell>
             </TableRow>
             <TableRow>
               <TableCell sx={{ fontWeight: "bold" }}>Age</TableCell>

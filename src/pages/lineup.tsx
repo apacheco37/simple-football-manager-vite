@@ -17,6 +17,7 @@ import { ALL_FORMATIONS, Formation, Player, Position } from "../db/db";
 import { SaveGameContext } from "./savegame-layout";
 import { calculatePlayerSkillInPosition } from "../utils/positions";
 import { calculateTeamRatings } from "../utils/match-simulation";
+import PositionChip from "../components/position-chip";
 
 const Lineup = () => {
   const {
@@ -262,8 +263,10 @@ const PlayersInLine = ({
 
   for (let i = positions.length - 1; i >= 0; i--) {
     selectionItems.push(
-      <Stack direction={"column"} minWidth={"15%"}>
-        <Typography textAlign={"center"}>{positions[i]}</Typography>
+      <Stack direction={"column"} minWidth={"15%"} spacing={1}>
+        <Typography textAlign={"center"}>
+          {<PositionChip position={positions[i]} />}
+        </Typography>
         <Select
           value={playerIDsInLine[i] ?? ""}
           key={`defenders-${i}`} // TODO: fix key
