@@ -1,4 +1,11 @@
-export const teamNames = {
+import { CountryCode } from "./countries";
+
+export const teamNames: {
+  ["americas"]: { name: string; countryCode: CountryCode }[];
+  ["europe"]: { name: string; countryCode: CountryCode }[];
+  ["africa"]: { name: string; countryCode: CountryCode }[];
+  ["asia"]: { name: string; countryCode: CountryCode }[];
+} = {
   americas: [
     { name: "Buenos Aires Gauchos", countryCode: "AR" }, // Argentina – Gauchos are iconic Argentine cowboys
     { name: "Brasília Jaguars", countryCode: "BR" }, // Brazil – Jaguars are native to the Amazon

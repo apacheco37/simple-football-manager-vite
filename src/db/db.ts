@@ -1,5 +1,7 @@
 import Dexie, { Table } from "dexie";
 
+import { CountryCode } from "../utils/countries";
+
 export interface SaveGame {
   id?: number;
   name: string;
@@ -11,7 +13,7 @@ export interface Team {
   id?: number;
   name: string;
   leagueID: number;
-  countryCode: string;
+  countryCode: CountryCode;
 }
 
 export interface Player {
@@ -22,7 +24,7 @@ export interface Player {
   skill: number;
   position: Position;
   teamID: number | null;
-  nationalityCode: string;
+  nationalityCode: CountryCode;
 }
 
 export interface MatchEvent {

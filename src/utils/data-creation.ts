@@ -15,6 +15,8 @@ import {
   TeamLineup,
 } from "../db/db";
 import { teamNames } from "./team-names";
+import { getRandomFirstName, getRandomLastName } from "./common-names";
+import { CountryCode } from "./countries";
 
 export const createNewGame = async (
   newSaveGameName: string,
@@ -163,7 +165,7 @@ const createTeams = (
         teams.push({
           name: generateRandomTeamName(),
           leagueID,
-          countryCode: faker.location.countryCode(), // TODO: check if it makes sense
+          countryCode: faker.location.countryCode() as CountryCode, // TODO: check if it makes sense
         });
       }
     });
@@ -203,7 +205,7 @@ const createTeams = (
 
 const createPlayers = (
   positions: Position[],
-  teams: { id: number; countryCode: string }[]
+  teams: { id: number; countryCode: CountryCode }[]
 ) => {
   const players: Player[] = [];
 
@@ -331,14 +333,14 @@ export const generateMatchesForSeasons = (
 const generateRandomPlayers = (
   positions: Position[],
   teamID: number,
-  teamCountryCode: string
+  teamCountryCode: CountryCode
 ) => {
   const players: Player[] = [];
 
   for (let i = 0; i < positions.length; i++) {
     players.push({
-      firstName: faker.person.firstName("male"),
-      lastName: faker.person.lastName("male"),
+      firstName: getRandomFirstName(teamCountryCode),
+      lastName: getRandomLastName(teamCountryCode),
       age: randomNormal(18, 36, 25, 5),
       skill: randomNormal(),
       position: positions[i],
